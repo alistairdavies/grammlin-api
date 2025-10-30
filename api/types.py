@@ -1,7 +1,11 @@
 from typing import Literal, Optional, Union
 from pydantic import BaseModel, Field
 
-from language.morphology import NounMorphology, PronounMorphology, VerbMorphology
+from language.morphology import (
+    NounMorphology,
+    PronounMorphology,
+    VerbMorphology,
+)
 from language.part_of_speech import PartOfSpeech
 from language.lemma import Lemma
 
@@ -16,7 +20,9 @@ class ParseRequest(BaseModel):
 
 class BaseToken(BaseModel):
     text: str = Field(description="The original word in the given text.")
-    lemma: Lemma = Field(description="The details for the base form of the word.")
+    lemma: Lemma = Field(
+        description="The details for the base form of the word."
+    )
     part_of_speech: Optional[PartOfSpeech] = Field(
         description="The category of the word derived from the universal part of speech tag."
     )

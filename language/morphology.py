@@ -13,7 +13,10 @@ PronounForm = Literal["object"] | Literal["possessive"] | Literal["subject"]
 
 
 GENDER_MAP: dict[str, NounGender] = {"Com": "common", "Neut": "neuter"}
-DEFINITENESS_MAP: dict[str, NounDefiniteness] = {"Def": "definite", "Ind": "indefinite"}
+DEFINITENESS_MAP: dict[str, NounDefiniteness] = {
+    "Def": "definite",
+    "Ind": "indefinite",
+}
 PLURALITY_MAP: dict[str, Plurality] = {
     "Sing": "singular",
     "Plur": "plural",

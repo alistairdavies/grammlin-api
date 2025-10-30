@@ -24,7 +24,9 @@ class TestNounMorphology_build:
 
         result = NounMorphology.build(morph_dict)
 
-        assert result == NounMorphology(gender=None, definiteness=None, plurality=None)
+        assert result == NounMorphology(
+            gender=None, definiteness=None, plurality=None
+        )
 
     def test_returns_none_values_if_missing(self):
         """
@@ -33,7 +35,9 @@ class TestNounMorphology_build:
         """
         result = NounMorphology.build({})
 
-        assert result == NounMorphology(gender=None, definiteness=None, plurality=None)
+        assert result == NounMorphology(
+            gender=None, definiteness=None, plurality=None
+        )
 
 
 class TestVerbMorphology_build:

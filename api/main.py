@@ -60,7 +60,9 @@ def parse_sentence(req: ParseRequest):
                     morphology=PronounMorphology.build(token.morph.to_dict()),
                 )
             )
-        elif pos is not None and (pos.id == "verb" or pos.id == "auxiliary_verb"):
+        elif pos is not None and (
+            pos.id == "verb" or pos.id == "auxiliary_verb"
+        ):
             tokens.append(
                 VerbToken(
                     text=token.text,

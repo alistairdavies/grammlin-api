@@ -35,4 +35,14 @@ The API should now be available at http://localhost:8000
 
 
 
+## Linting and Formatting
 
+Lint all files and auto-fix issues if possible:
+```
+uv run ruff check --fix
+```
+
+Format all files:
+```
+uv run ruff format
+```
