@@ -23,7 +23,12 @@ uv install
 
 4. Install NLP Model
 ```sh
-uv run python -m spacy download sv_core_news_sm
+uv run python -m spacy download sv_core_news_lg
+```
+
+
+```sh
+uv run python -m uralicNLP.download --languages swe
 ```
 
 5. Run the app

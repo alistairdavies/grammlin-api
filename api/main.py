@@ -18,6 +18,7 @@ from language.morphology import (
     VerbMorphology,
 )
 from language.part_of_speech import is_punctuation, map_universal_pos
+from uralicNLP import uralicApi
 
 nlp = spacy.load("sv_core_news_lg")
 api = FastAPI()
@@ -41,7 +42,9 @@ def parse_sentence(req: ParseRequest):
             continue
 
         pos = map_universal_pos(token.pos_)
-        lemma = Lemma(text=token.lemma_)
+        lemm = uralicApi.lemmatize(token.text, "swe", word_boundaries=False)
+        lemmat = token.lemma_ if token.lemma_ in lemm else token.text
+        lemma = Lemma(text=lemmat)
         if pos is not None and pos.id == "noun":
             tokens.append(
                 NounToken(
@@ -73,9 +76,6 @@ def parse_sentence(req: ParseRequest):
             )
 
         else:
-            print(token.text)
-            print(token.pos_)
-            print(token.morph.to_dict())
             tokens.append(
                 BaseToken(
                     text=token.text,
