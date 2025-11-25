@@ -1,16 +1,14 @@
-from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Optional
+from pydantic import BaseModel
 
-
-NounGender = Literal["common"] | Literal["neuter"]
-NounDefiniteness = Literal["definite"] | Literal["indefinite"]
-Plurality = Literal["singular"] | Literal["plural"]
-
-VerbTense = Literal["past tense"] | Literal["present tense"]
-VerbForm = Literal["infinitive"] | Literal["supine"] | Literal["imperative"]
-
-PronounForm = Literal["object"] | Literal["possessive"] | Literal["subject"]
-
+from language.types import (
+    NounGender,
+    NounDefiniteness,
+    Plurality,
+    VerbTense,
+    VerbForm,
+    PronounForm,
+)
 
 GENDER_MAP: dict[str, NounGender] = {"Com": "common", "Neut": "neuter"}
 DEFINITENESS_MAP: dict[str, NounDefiniteness] = {
@@ -38,11 +36,10 @@ PRONOUN_FORM_MAP: dict[str, PronounForm] = {
 }
 
 
-@dataclass
-class NounMorphology:
-    gender: Optional[NounGender]
-    definiteness: Optional[NounDefiniteness]
-    plurality: Optional[Plurality]
+class NounMorphology(BaseModel):
+    gender: Optional[NounGender] = None
+    definiteness: Optional[NounDefiniteness] = None
+    plurality: Optional[Plurality] = None
 
     @classmethod
     def build(cls, morph: dict[str, str]) -> "NounMorphology":
@@ -53,10 +50,9 @@ class NounMorphology:
         )
 
 
-@dataclass
-class VerbMorphology:
-    tense: Optional[VerbTense]
-    form: Optional[VerbForm]
+class VerbMorphology(BaseModel):
+    tense: Optional[VerbTense] = None
+    form: Optional[VerbForm] = None
 
     @classmethod
     def build(cls, morph: dict[str, str]) -> "VerbMorphology":
@@ -66,13 +62,12 @@ class VerbMorphology:
         )
 
 
-@dataclass
-class PronounMorphology:
+class PronounMorphology(BaseModel):
     form: PronounForm
 
     @classmethod
     def build(cls, morph: dict[str, str]) -> "PronounMorphology":
+        # Spacy does not return a 'case' for the pronoun when possessive.
         return cls(
-            # Spacy does not return a 'case' for the pronoun when possessive.
             form=PRONOUN_FORM_MAP.get(morph.get("Case", ""), "possessive"),
         )

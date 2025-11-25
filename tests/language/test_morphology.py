@@ -1,4 +1,8 @@
-from language.morphology import NounMorphology, VerbMorphology
+from language.morphology import (
+    NounMorphology,
+    VerbMorphology,
+    PronounMorphology,
+)
 
 
 class TestNounMorphology_build:
@@ -50,7 +54,7 @@ class TestVerbMorphology_build:
 
         result = VerbMorphology.build(morph_dict)
 
-        assert result == VerbMorphology(tense="present")
+        assert result == VerbMorphology(tense="present tense", form=None)
 
     def test_returns_none_values_if_unknown(self):
         """
@@ -61,7 +65,7 @@ class TestVerbMorphology_build:
 
         result = VerbMorphology.build(morph_dict)
 
-        assert result == VerbMorphology(tense=None)
+        assert result == VerbMorphology(tense=None, form=None)
 
     def test_returns_none_values_if_missing(self):
         """
@@ -70,4 +74,37 @@ class TestVerbMorphology_build:
         """
         result = VerbMorphology.build({})
 
-        assert result == VerbMorphology(tense=None)
+        assert result == VerbMorphology(tense=None, form=None)
+
+
+class TestPronounMorphology_build:
+    def test_returns_subject_form(self):
+        """
+        Given a morphology dictionary with nominative case
+        It returns pronoun with subject form
+        """
+        morph_dict = {"Case": "Nom"}
+
+        result = PronounMorphology.build(morph_dict)
+
+        assert result == PronounMorphology(form="subject")
+
+    def test_returns_object_form(self):
+        """
+        Given a morphology dictionary with accusative case
+        It returns pronoun with object form
+        """
+        morph_dict = {"Case": "Acc"}
+
+        result = PronounMorphology.build(morph_dict)
+
+        assert result == PronounMorphology(form="object")
+
+    def test_returns_possessive_form_when_no_case(self):
+        """
+        Given a morphology dictionary without a case field
+        It returns pronoun with possessive form as default
+        """
+        result = PronounMorphology.build({})
+
+        assert result == PronounMorphology(form="possessive")
