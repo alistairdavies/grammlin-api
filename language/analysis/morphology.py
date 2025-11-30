@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 
-from language.types import (
+from language.analysis.types import (
     NounGender,
     NounDefiniteness,
     Plurality,

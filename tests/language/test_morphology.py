@@ -1,4 +1,4 @@
-from language.morphology import (
+from language.analysis.morphology import (
     NounMorphology,
     VerbMorphology,
     PronounMorphology,

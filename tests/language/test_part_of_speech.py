@@ -1,4 +1,4 @@
-from language.part_of_speech import PartOfSpeech, map_universal_pos
+from language.analysis.part_of_speech import PartOfSpeech, map_universal_pos
 
 
 class TestMapUniversalPOS:

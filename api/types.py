@@ -1,12 +1,13 @@
 from typing import Optional, Union
 from pydantic import BaseModel, Field
 
-from language.morphology import (
+from language.analysis.morphology import (
     NounMorphology,
     PronounMorphology,
     VerbMorphology,
 )
-from language.part_of_speech import PartOfSpeech
+from language.analysis.part_of_speech import PartOfSpeech
+from language.dictionary.service import DictionaryEntry
 
 
 class ParseRequest(BaseModel):
@@ -20,6 +21,10 @@ class BaseToken(BaseModel):
             "The category of the word derived from the universal "
             "part of speech tag."
         )
+    )
+    definition: Optional[DictionaryEntry] = Field(
+        description="The dictionary definition of the word from "
+        "folkets lexikon"
     )
 
 

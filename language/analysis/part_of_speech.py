@@ -20,6 +20,7 @@ UNIVERSAL_POS_MAP = {
     "SCONJ": PartOfSpeech(id="conjunction", title="Conjunction"),
     "ADP": PartOfSpeech(id="preposition", title="Preposition"),
     "INTJ": PartOfSpeech(id="interjection", title="Interjection"),
+    "PUNCT": PartOfSpeech(id="punctuation", title="Punctuation"),
 }
 
 
