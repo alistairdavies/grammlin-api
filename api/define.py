@@ -1,23 +1,20 @@
-from pathlib import Path
-
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from language.analysis.types import PartOfSpeechId
-from language.dictionary.service import Definition, DictionaryService
+from language.dictionary.service import Definition
 
-dictionary_service = DictionaryService(Path("folkets_sv_en.xdxf"))
 router = APIRouter()
 
 
-class Word(BaseModel):
+class DefineRequest(BaseModel):
     text: str = Field(description="The word to look up")
     pos: PartOfSpeechId | None = Field(
         default=None, description="Optional part of speech for filtering"
     )
 
 
-class DefinitionResult(BaseModel):
+class DefineResponse(BaseModel):
     text: str = Field(description="The word that was looked up")
     pos: PartOfSpeechId | None = Field(
         description="Part of speech used for filtering"
@@ -27,37 +24,22 @@ class DefinitionResult(BaseModel):
     )
 
 
-class DefineRequest(BaseModel):
-    words: list[Word] = Field(
-        min_length=1, description="Words to look up in the dictionary"
-    )
-
-
-class DefineResponse(BaseModel):
-    definitions: list[DefinitionResult]
-
-
 @router.post("/define", response_model=DefineResponse)
-def define_words(req: DefineRequest) -> DefineResponse:
-    results = []
+def define_word(req: DefineRequest) -> DefineResponse:
+    from api.main import dictionary_service
 
-    for word in req.words:
-        entries = dictionary_service.search(word.text, word.pos)
+    entries = dictionary_service.search(req.text, req.pos)
 
-        definitions = [
-            Definition(
-                translations=entry.translations,
-                definition=entry.definition
-            )
-            for entry in entries
-        ]
-
-        results.append(
-            DefinitionResult(
-                text=word.text,
-                pos=word.pos,
-                definitions=definitions
-            )
+    definitions = [
+        Definition(
+            translations=entry.translations,
+            definition=entry.definition
         )
+        for entry in entries
+    ]
 
-    return DefineResponse(definitions=results)
+    return DefineResponse(
+        text=req.text,
+        pos=req.pos,
+        definitions=definitions
+    )

@@ -8,6 +8,7 @@ from language.analysis.morphology import (
     VerbMorphology,
 )
 from language.analysis.part_of_speech import PartOfSpeech
+from language.dictionary.service import Definition
 
 
 class BaseToken(BaseModel):
@@ -17,6 +18,10 @@ class BaseToken(BaseModel):
             "The category of the word derived from the universal "
             "part of speech tag."
         )
+    )
+    definitions: list[Definition] = Field(
+        default_factory=list,
+        description="Dictionary definitions for this word"
     )
 
 

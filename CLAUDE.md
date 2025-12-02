@@ -72,6 +72,7 @@ The codebase follows a domain-driven structure with clear separation of concerns
   - `part_of_speech.py` - Maps Universal POS tags to application-specific PartOfSpeech types
   - `morphology.py` - Morphological analysis for nouns, verbs, and pronouns (gender, tense, case, etc.)
   - `types.py` - Literal types for all domain types (POS IDs, morphological features)
+  - `tokens.py` - Token models (BaseToken, NounToken, VerbToken, PronounToken)
   - `models.py` - Loads the spaCy Swedish model (sv_core_news_lg)
 
 - **`language/dictionary/`** - Dictionary integration
@@ -130,9 +131,10 @@ Morphology extraction uses `.build()` class methods (language/analysis/morpholog
 
 ### Type Definitions
 - All Literal types for domain values are centralized in `language/analysis/types.py`
-- This includes `PartOfSpeechId`, morphological feature types, and token models
+- This includes `PartOfSpeechId` and morphological feature types
 - Use string Literal types rather than Enums for simple value constraints
-- Token types (BaseToken, NounToken, etc.) live in `language/analysis/types.py`, not in API layer
+- Token models (BaseToken, NounToken, etc.) live in `language/analysis/tokens.py`
+- Separation prevents circular imports between types, morphology, and part_of_speech modules
 
 ### Part of Speech Mappings
 - **Universal POS → Application**: `UNIVERSAL_POS_MAP` in `part_of_speech.py` maps spaCy tags
@@ -176,7 +178,11 @@ Example: The `is_swedish()` function returns `False` instead of raising an excep
 - **Pydantic** - Data validation and serialization
 - **pytest** - Testing framework
 - **ruff** - Linting and formatting
-- I want to keep my commits meaningful. After a logical chunk please create a commit with a meaningful name.
-- When creating commits. Please ask which files to include and exclude.
-- Prefer short and concise one line commit messages
+
+## Git Conventions
+
+- Keep commits meaningful and focused on logical chunks
+- Ask which files to include/exclude when creating commits
+- Use short, concise one-line commit messages
+- Omit Claude Code attribution from commit messages
 - Proactively remove dead or commented out code

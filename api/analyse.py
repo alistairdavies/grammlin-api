@@ -10,6 +10,7 @@ from language.analysis.tokens import (
     VerbToken,
 )
 from language.detection import is_swedish
+from language.dictionary.service import Definition
 
 nlp = load_swedish_model()
 router = APIRouter()
@@ -35,6 +36,8 @@ class AnalyseResponse(BaseModel):
 
 @router.post("/analyse", response_model=AnalyseResponse)
 def analyse_sentence(req: AnalyseRequest) -> AnalyseResponse:
+    from api.main import dictionary_service
+
     if not is_swedish(req.sentence):
         raise HTTPException(
             status_code=422, detail="Input must be Swedish text"
@@ -42,5 +45,16 @@ def analyse_sentence(req: AnalyseRequest) -> AnalyseResponse:
 
     doc = nlp(req.sentence)
     tokens = parse_tokens(doc)
+
+    for token in tokens:
+        pos_filter = token.part_of_speech.id if token.part_of_speech else None
+        entries = dictionary_service.search(token.text.lower(), pos_filter)
+        token.definitions = [
+            Definition(
+                translations=entry.translations,
+                definition=entry.definition
+            )
+            for entry in entries
+        ]
 
     return AnalyseResponse(tokens=tokens)
