@@ -1,10 +1,12 @@
 from typing import Optional
 from pydantic import BaseModel
 
+from language.analysis.types import PartOfSpeechId
+
 
 class PartOfSpeech(BaseModel):
     title: str
-    id: str
+    id: PartOfSpeechId
 
 
 UNIVERSAL_POS_MAP = {

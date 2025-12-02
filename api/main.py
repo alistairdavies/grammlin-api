@@ -3,15 +3,14 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.types import ParseResponse, ParseRequest
+from api import analyse, define
 from language.analysis.models import load_swedish_model
-from language.analysis.parser import parse_tokens
 from language.dictionary.service import DictionaryService
 
 nlp = load_swedish_model()
-api = FastAPI()
-
 dictionary_service = DictionaryService(Path("folkets_sv_en.xdxf"))
+
+api = FastAPI()
 
 api.add_middleware(
     CORSMiddleware,
@@ -21,9 +20,5 @@ api.add_middleware(
     allow_headers=["*"],
 )
 
-
-@api.post("/parse", response_model=ParseResponse)
-def parse_sentence(req: ParseRequest) -> ParseResponse:
-    doc = nlp(req.sentence)
-    tokens = parse_tokens(dictionary_service, doc)
-    return ParseResponse(tokens=tokens)
+api.include_router(analyse.router)
+api.include_router(define.router)

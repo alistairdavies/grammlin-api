@@ -3,13 +3,36 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from language.analysis.types import PartOfSpeechId
+
+# Mapping from Folkets Lexikon dictionary POS abbreviations
+# to application POS IDs
+DICTIONARY_POS_MAP: dict[str, PartOfSpeechId] = {
+    "nn": "noun",  # substantiv (noun)
+    "vb": "verb",  # verb
+    "jj": "adjective",  # adjektiv (adjective)
+    "ab": "adverb",  # adverb
+    "pn": "pronoun",  # pronomen (pronoun)
+    "pp": "preposition",  # preposition
+    "kn": "conjunction",  # konjunktion (conjunction)
+    "in": "interjection",  # interjektion (interjection)
+}
+
 
 class DictionaryEntry(BaseModel):
-    """Represents a dictionary entry."""
+    """Internal representation of a dictionary entry with metadata."""
 
     headword: str
     part_of_speech: str | None
+    translations: list[str]
     definition: str | None
+
+
+class Definition(BaseModel):
+    """Public API representation of a definition."""
+
+    translations: list[str]
+    definition: str | None = None
 
 
 class DictionaryService:
@@ -83,6 +106,12 @@ class DictionaryService:
             gr.text.strip() if gr is not None and gr.text else None
         )
 
+        # Extract all translations from <dtrn> tags
+        translations = [
+            dtrn.text.strip() for dtrn in def_elem.findall("dtrn") if dtrn.text
+        ]
+
+        # Extract Swedish definition from nested <def> tag
         def_text_elem = def_elem.find("def")
         definition = (
             def_text_elem.text.strip()
@@ -93,19 +122,45 @@ class DictionaryService:
         return DictionaryEntry(
             headword=headword,
             part_of_speech=part_of_speech,
+            translations=translations,
             definition=definition,
         )
 
-    def search(self, word: str) -> list[DictionaryEntry]:
-        """Search for a word in the dictionary.
+    def search(
+        self, word: str, pos_filter: str | None = None
+    ) -> list[DictionaryEntry]:
+        """Search for a word in the dictionary with optional POS filtering.
 
         Args:
             word: The word to search for (case-insensitive)
+            pos_filter: Optional application POS ID to filter results.
+                       If provided, only returns definitions matching
+                       this POS. If no matches found or pos_filter is
+                       None, returns all definitions.
 
         Returns:
             List of DictionaryEntry objects if found, empty list otherwise
         """
-        if word.lower() in self._entries:
-            return self._entries[word.lower()]
+        if word.lower() not in self._entries:
+            return []
 
-        return []
+        all_entries = self._entries[word.lower()]
+
+        # If no POS filter provided, return all entries
+        if pos_filter is None:
+            return all_entries
+
+        # Filter entries by POS
+        filtered_entries = [
+            entry
+            for entry in all_entries
+            if entry.part_of_speech is not None
+            and DICTIONARY_POS_MAP.get(entry.part_of_speech) == pos_filter
+        ]
+
+        # If no matches found with filter, return all entries as fallback
+        # This handles cases where dictionary has no POS tags or unknown POS
+        if not filtered_entries:
+            return all_entries
+
+        return filtered_entries
