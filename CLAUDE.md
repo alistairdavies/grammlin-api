@@ -179,3 +179,4 @@ Example: The `is_swedish()` function returns `False` instead of raising an excep
 - I want to keep my commits meaningful. After a logical chunk please create a commit with a meaningful name.
 - When creating commits. Please ask which files to include and exclude.
 - Prefer short and concise one line commit messages
+- Proactively remove dead or commented out code

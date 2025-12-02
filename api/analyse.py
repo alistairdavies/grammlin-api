@@ -3,7 +3,12 @@ from pydantic import BaseModel, Field, field_validator
 
 from language.analysis.models import load_swedish_model
 from language.analysis.parser import parse_tokens
-from language.analysis.types import BaseToken, NounToken, PronounToken, VerbToken
+from language.analysis.tokens import (
+    BaseToken,
+    NounToken,
+    PronounToken,
+    VerbToken,
+)
 from language.detection import is_swedish
 
 nlp = load_swedish_model()

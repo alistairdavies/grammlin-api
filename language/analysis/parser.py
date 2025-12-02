@@ -7,10 +7,17 @@ from language.analysis.morphology import (
     VerbMorphology,
 )
 from language.analysis.part_of_speech import map_universal_pos
-from language.analysis.types import BaseToken, NounToken, PronounToken, VerbToken
+from language.analysis.tokens import (
+    BaseToken,
+    NounToken,
+    PronounToken,
+    VerbToken,
+)
 
 
-def parse_token(token: Token) -> Optional[Union[NounToken, VerbToken, PronounToken, BaseToken]]:
+def parse_token(
+    token: Token,
+) -> Optional[Union[NounToken, VerbToken, PronounToken, BaseToken]]:
     pos = map_universal_pos(token.pos_)
 
     if pos is not None and pos.id == "punctuation":
@@ -42,7 +49,9 @@ def parse_token(token: Token) -> Optional[Union[NounToken, VerbToken, PronounTok
     )
 
 
-def parse_tokens(doc: Doc) -> list[Union[NounToken, VerbToken, PronounToken, BaseToken]]:
+def parse_tokens(
+    doc: Doc,
+) -> list[Union[NounToken, VerbToken, PronounToken, BaseToken]]:
     tokens: list[Union[NounToken, VerbToken, PronounToken, BaseToken]] = []
     for token in doc:
         parsed_token = parse_token(token)
