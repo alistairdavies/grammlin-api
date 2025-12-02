@@ -1,9 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, field_validator
 
+from language.analysis.models import load_swedish_model
+from language.analysis.parser import parse_tokens
 from language.analysis.types import BaseToken, NounToken, PronounToken, VerbToken
 from language.detection import is_swedish
 
+nlp = load_swedish_model()
 router = APIRouter()
 
 
@@ -32,5 +35,7 @@ def analyse_sentence(req: AnalyseRequest) -> AnalyseResponse:
             status_code=422, detail="Input must be Swedish text"
         )
 
-    # TODO: Call parser without dictionary lookups
-    pass
+    doc = nlp(req.sentence)
+    tokens = parse_tokens(doc)
+
+    return AnalyseResponse(tokens=tokens)
