@@ -1,7 +1,5 @@
 from lingua import Language, LanguageDetectorBuilder
 
-# Build detector for Swedish language detection
-# Include English for comparison
 _detector = (
     LanguageDetectorBuilder.from_languages(
         Language.SWEDISH,
