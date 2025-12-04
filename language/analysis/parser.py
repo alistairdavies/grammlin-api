@@ -27,24 +27,28 @@ def parse_token(
         if pos.id == "noun":
             return NounToken(
                 text=token.text,
+                lemma=token.lemma_,
                 part_of_speech=pos,
                 morphology=NounMorphology.build(token.morph.to_dict()),
             )
         elif pos.id == "pronoun":
             return PronounToken(
                 text=token.text,
+                lemma=token.lemma_,
                 part_of_speech=pos,
                 morphology=PronounMorphology.build(token.morph.to_dict()),
             )
         elif pos.id == "verb" or pos.id == "auxiliary_verb":
             return VerbToken(
                 text=token.text,
+                lemma=token.lemma_,
                 part_of_speech=pos,
                 morphology=VerbMorphology.build(token.morph.to_dict()),
             )
 
     return BaseToken(
         text=token.text,
+        lemma=token.lemma_,
         part_of_speech=pos,
     )
 

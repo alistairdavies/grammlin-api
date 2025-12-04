@@ -48,11 +48,10 @@ def analyse_sentence(req: AnalyseRequest) -> AnalyseResponse:
 
     for token in tokens:
         pos_filter = token.part_of_speech.id if token.part_of_speech else None
-        entries = dictionary_service.search(token.text.lower(), pos_filter)
+        entries = dictionary_service.search(token.lemma.lower(), pos_filter)
         token.definitions = [
             Definition(
-                translations=entry.translations,
-                definition=entry.definition
+                translations=entry.translations, definition=entry.definition
             )
             for entry in entries
         ]
