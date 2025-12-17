@@ -2,6 +2,7 @@ from typing import Literal
 
 PartOfSpeechId = Literal[
     "noun",
+    "numeral",
     "verb",
     "auxiliary_verb",
     "adjective",

@@ -23,6 +23,7 @@ UNIVERSAL_POS_MAP = {
     "ADP": PartOfSpeech(id="preposition", title="Preposition"),
     "INTJ": PartOfSpeech(id="interjection", title="Interjection"),
     "PUNCT": PartOfSpeech(id="punctuation", title="Punctuation"),
+    "NUM": PartOfSpeech(id="numeral", title="Numeral"),
 }
 
 

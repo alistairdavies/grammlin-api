@@ -16,6 +16,12 @@ DICTIONARY_POS_MAP: dict[str, PartOfSpeechId] = {
     "pp": "preposition",  # preposition
     "kn": "conjunction",  # konjunktion (conjunction)
     "in": "interjection",  # interjektion (interjection)
+    "rg": "numeral",  # räkneord (numbers)
+    "pm": "noun",  # proprium (proper nouns)
+    "hp": "pronoun",  # interrogative/relative pronouns
+    "sn": "conjunction",  # subjunktion (subordinating conjunction)
+    "ps": "pronoun",  # possessive pronouns
+    "article": "determiner",
 }
 
 
