@@ -26,17 +26,12 @@ uv install
 uv run python -m spacy download sv_core_news_lg
 ```
 
-
-```sh
-uv run python -m uralicNLP.download --languages swe
-```
-
 5. Run the app
 ```sh
 ./scripts/run-app.sh
 ```
 
-The API should now be available at http://localhost:8000
+The API should now be available at http://localhost:8001
 
 
 

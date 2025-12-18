@@ -17,9 +17,8 @@ source venv/bin/activate  # or: source venv/bin/activate.fish
 # Install dependencies
 uv install
 
-# Install required NLP models (must be done after installation)
+# Install required NLP model (must be done after installation)
 uv run python -m spacy download sv_core_news_lg
-uv run python -m uralicNLP.download --languages swe
 ```
 
 ### Running the Application
@@ -173,7 +172,6 @@ Example: The `is_swedish()` function returns `False` instead of raising an excep
 
 - **FastAPI/Uvicorn** - Web framework and ASGI server
 - **spaCy** - NLP pipeline with `sv_core_news_lg` model for Swedish
-- **uralicNLP** - Additional Swedish language resources
 - **lingua-py** - Language detection for Swedish validation (optimized for short texts)
 - **Pydantic** - Data validation and serialization
 - **pytest** - Testing framework
