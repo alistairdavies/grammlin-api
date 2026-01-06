@@ -681,19 +681,28 @@ wheels = [
 ]
 
 [[package]]
+name = "sv-core-news-lg"
+version = "3.8.0"
+source = { url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_lg-3.8.0/sv_core_news_lg-3.8.0-py3-none-any.whl" }
+wheels = [
+    { url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_lg-3.8.0/sv_core_news_lg-3.8.0-py3-none-any.whl", hash = "sha256:1f1db1cb811dc21e7eaab023bb0ea4afe66038d0e6f0837b537f736503bcede3" },
+]
+
+[[package]]
 name = "swedish-grammar"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "lingua-language-detector" },
-    { name = "pytest" },
     { name = "spacy" },
+    { name = "sv-core-news-lg" },
     { name = "uvicorn" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "pytest" },
     { name = "ruff" },
 ]
 
@@ -701,13 +710,16 @@ dev = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.117.1" },
     { name = "lingua-language-detector", specifier = ">=2.0.2" },
-    { name = "pytest", specifier = ">=8.4.2" },
     { name = "spacy", extras = ["sv"], specifier = ">=3.8.7" },
+    { name = "sv-core-news-lg", url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_lg-3.8.0/sv_core_news_lg-3.8.0-py3-none-any.whl" },
     { name = "uvicorn", specifier = ">=0.37.0" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.14.2" }]
+dev = [
+    { name = "pytest", specifier = ">=8.4.2" },
+    { name = "ruff", specifier = ">=0.14.2" },
+]
 
 [[package]]
 name = "thinc"

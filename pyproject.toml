@@ -8,6 +8,7 @@ dependencies = [
     "fastapi>=0.117.1",
     "lingua-language-detector>=2.0.2",
     "spacy[sv]>=3.8.7",
+    "sv-core-news-lg",
     "uvicorn>=0.37.0",
 ]
 
@@ -26,3 +27,6 @@ line-length = 79
 # overlap with the use of a formatter, like Black, but we can override this behavior by
 # explicitly adding the rule.
 extend-select = ["E501"]
+
+[tool.uv.sources]
+sv-core-news-lg = { url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_lg-3.8.0/sv_core_news_lg-3.8.0-py3-none-any.whl" }

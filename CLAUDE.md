@@ -194,7 +194,7 @@ The application is configured for deployment to Render using the free tier.
   - Free tier plan
 
 - **`scripts/build.sh`** - Build script executed by Render
-  - Installs dependencies via uv
+  - Installs dependencies via `uv sync --no-dev` (production only, excludes pytest and ruff)
   - Downloads spaCy Swedish model (`sv_core_news_lg`)
   - Downloads Folkets Lexikon dictionary file from https://folkets-lexikon.csc.kth.se/folkets/folkets_sv_en_public.xdxf
 
