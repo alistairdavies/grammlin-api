@@ -63,6 +63,7 @@ The codebase follows a domain-driven structure with clear separation of concerns
 
 - **`api/`** - FastAPI application layer
   - `main.py` - API app initialization and router registration
+  - `health.py` - `/health` endpoint for health checks
   - `analyse.py` - `/analyse` endpoint with request/response types
   - `define.py` - `/define` endpoint with request/response types
 
@@ -84,7 +85,7 @@ The codebase follows a domain-driven structure with clear separation of concerns
 
 ### Data Flow
 
-1. **Request** → FastAPI receives text via `/parse` endpoint (api/main.py:26)
+1. **Request** → FastAPI receives text via `/analyse` endpoint
 2. **Validation** → Input is validated:
    - Pydantic validates length (1-1000 chars) and strips whitespace
    - Language detection confirms text is Swedish (returns 422 if not)
@@ -170,12 +171,47 @@ Example: The `is_swedish()` function returns `False` instead of raising an excep
 
 ## Dependencies
 
+### Production Dependencies
 - **FastAPI/Uvicorn** - Web framework and ASGI server
 - **spaCy** - NLP pipeline with `sv_core_news_lg` model for Swedish
 - **lingua-py** - Language detection for Swedish validation (optimized for short texts)
 - **Pydantic** - Data validation and serialization
+
+### Development Dependencies
 - **pytest** - Testing framework
 - **ruff** - Linting and formatting
+
+## Deployment
+
+The application is configured for deployment to Render using the free tier.
+
+### Deployment Files
+
+- **`render.yaml`** - Render service configuration
+  - Configures Python 3.13.11 runtime
+  - Defines build and start commands
+  - Health check endpoint: `/health`
+  - Free tier plan
+
+- **`scripts/build.sh`** - Build script executed by Render
+  - Installs dependencies via uv
+  - Downloads spaCy Swedish model (`sv_core_news_lg`)
+  - Downloads Folkets Lexikon dictionary file from https://folkets-lexikon.csc.kth.se/folkets/folkets_sv_en_public.xdxf
+
+- **`THIRD_PARTY_NOTICES.md`** - License attributions
+  - Documents third-party data sources and their licenses
+  - Folkets Lexikon (CC-BY-SA-2.5)
+  - spaCy Swedish model (CC-BY-SA-4.0)
+
+### Deployment Process
+
+1. Push code to GitHub
+2. Connect repository to Render
+3. Render automatically runs `scripts/build.sh`
+4. Application starts with uvicorn on Render's assigned port
+5. Health check at `/health` confirms service is running
+
+**Note**: Render's free tier spins down after 15 minutes of inactivity. First request after inactivity will be slower as the service spins back up.
 
 ## Git Conventions
 
