@@ -18,7 +18,7 @@ source venv/bin/activate  # or: source venv/bin/activate.fish
 uv install
 
 # Install required NLP model (must be done after installation)
-uv run python -m spacy download sv_core_news_lg
+uv run python -m spacy download sv_core_news_md
 ```
 
 ### Running the Application
@@ -173,7 +173,7 @@ Example: The `is_swedish()` function returns `False` instead of raising an excep
 
 ### Production Dependencies
 - **FastAPI/Uvicorn** - Web framework and ASGI server
-- **spaCy** - NLP pipeline with `sv_core_news_lg` model for Swedish
+- **spaCy** - NLP pipeline with `sv_core_news_md` model for Swedish
 - **lingua-py** - Language detection for Swedish validation (optimized for short texts)
 - **Pydantic** - Data validation and serialization
 
@@ -195,7 +195,7 @@ The application is configured for deployment to Render using the free tier.
 
 - **`scripts/build.sh`** - Build script executed by Render
   - Installs dependencies via `uv sync --no-dev` (production only, excludes pytest and ruff)
-  - Downloads spaCy Swedish model (`sv_core_news_lg`)
+  - Downloads spaCy Swedish model (`sv_core_news_md`)
   - Downloads Folkets Lexikon dictionary file from https://folkets-lexikon.csc.kth.se/folkets/folkets_sv_en_public.xdxf
 
 - **`THIRD_PARTY_NOTICES.md`** - License attributions

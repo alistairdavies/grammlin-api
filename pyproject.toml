@@ -8,7 +8,7 @@ dependencies = [
     "fastapi>=0.117.1",
     "lingua-language-detector>=2.0.2",
     "spacy[sv]>=3.8.7",
-    "sv-core-news-sm",
+    "sv-core-news-md",
     "uvicorn>=0.37.0",
 ]
 
@@ -29,4 +29,4 @@ line-length = 79
 extend-select = ["E501"]
 
 [tool.uv.sources]
-sv-core-news-sm = { url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_sm-3.8.0/sv_core_news_sm-3.8.0-py3-none-any.whl" }
+sv-core-news-md = { url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_md-3.8.0/sv_core_news_md-3.8.0-py3-none-any.whl" }

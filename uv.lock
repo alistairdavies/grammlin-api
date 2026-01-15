@@ -681,11 +681,11 @@ wheels = [
 ]
 
 [[package]]
-name = "sv-core-news-sm"
+name = "sv-core-news-md"
 version = "3.8.0"
-source = { url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_sm-3.8.0/sv_core_news_sm-3.8.0-py3-none-any.whl" }
+source = { url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_md-3.8.0/sv_core_news_md-3.8.0-py3-none-any.whl" }
 wheels = [
-    { url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_sm-3.8.0/sv_core_news_sm-3.8.0-py3-none-any.whl", hash = "sha256:be4929fb30523dca0b6672f999cdbf4d64f165419f1eed0014ca3a36599b8b4d" },
+    { url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_md-3.8.0/sv_core_news_md-3.8.0-py3-none-any.whl", hash = "sha256:f5e719fcf728bd5552daf70f278aba08113ce939714a070dd97f02a2aa2903bc" },
 ]
 
 [[package]]
@@ -696,7 +696,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "lingua-language-detector" },
     { name = "spacy" },
-    { name = "sv-core-news-sm" },
+    { name = "sv-core-news-md" },
     { name = "uvicorn" },
 ]
 
@@ -711,7 +711,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.117.1" },
     { name = "lingua-language-detector", specifier = ">=2.0.2" },
     { name = "spacy", extras = ["sv"], specifier = ">=3.8.7" },
-    { name = "sv-core-news-sm", url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_sm-3.8.0/sv_core_news_sm-3.8.0-py3-none-any.whl" },
+    { name = "sv-core-news-md", url = "https://github.com/explosion/spacy-models/releases/download/sv_core_news_md-3.8.0/sv_core_news_md-3.8.0-py3-none-any.whl" },
     { name = "uvicorn", specifier = ">=0.37.0" },
 ]
 

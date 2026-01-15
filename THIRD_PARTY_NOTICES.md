@@ -10,7 +10,7 @@ This application uses the following third-party data sources:
 
 Swedish-English dictionary maintained by the Royal Institute of Technology (KTH), Stockholm.
 
-## spaCy Swedish Language Model (sv_core_news_lg)
+## spaCy Swedish Language Model (sv_core_news_md)
 
 **Source**: https://spacy.io/models/sv
 **License**: Creative Commons Attribution-ShareAlike 4.0 International (CC-BY-SA-4.0)
