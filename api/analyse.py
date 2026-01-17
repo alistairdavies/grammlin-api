@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
 
 from language.analysis.models import load_swedish_model
@@ -23,10 +23,14 @@ class AnalyseRequest(BaseModel):
 
     @field_validator("sentence")
     @classmethod
-    def strip_and_validate_whitespace(cls, v: str) -> str:
+    def validate_sentence(cls, v: str) -> str:
         stripped = v.strip()
         if not stripped:
             raise ValueError("Sentence cannot be whitespace only")
+
+        if not is_swedish(v):
+            raise ValueError("Input must be Swedish text")
+
         return stripped
 
 
@@ -38,12 +42,8 @@ class AnalyseResponse(BaseModel):
 def analyse_sentence(req: AnalyseRequest) -> AnalyseResponse:
     from api.main import dictionary_service
 
-    if not is_swedish(req.sentence):
-        raise HTTPException(
-            status_code=422, detail="Input must be Swedish text"
-        )
-
     doc = nlp(req.sentence)
+    breakpoint()
     tokens = parse_tokens(doc)
 
     for token in tokens:

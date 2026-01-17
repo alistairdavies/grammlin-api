@@ -5,44 +5,37 @@ class TestIsSwedish:
     def test_returns_true_for_swedish(self):
         """
         Given Swedish text
-        When checking if Swedish
-        Then returns True
+        It returns True
         """
-        text = "Jag älskar svenska språket"
-        assert is_swedish(text) is True
+        texts = ["Jag älskar svenska språket", "Hej, jag heter John"]
 
-    def test_returns_false_for_english(self):
-        """
-        Given English text
-        When checking if Swedish
-        Then returns False
-        """
-        text = "I love the English language"
-        assert is_swedish(text) is False
+        assert all(is_swedish(text) is True for text in texts)
 
-    def test_returns_false_for_german(self):
+    def test_returns_false_for_other_language(self):
         """
-        Given German text
-        When checking if Swedish
-        Then returns False
+        Given text in a language that is not Swedish
+        It returns False
         """
-        text = "Ich liebe die deutsche Sprache"
-        assert is_swedish(text) is False
+        texts = [
+            "I love the English language",
+            "Ich liebe die deutsche Sprache",
+        ]
 
-    def test_returns_false_when_detection_fails(self):
+        assert all(is_swedish(text) is False for text in texts)
+
+    def test_returns_false_for_indistinguishable_text(self):
         """
-        Given text that cannot be detected
-        When checking if Swedish
-        Then returns False
+        Given text that is unambiguous
+        It returns False
         """
         text = "a"
+
         assert is_swedish(text) is False
 
     def test_returns_false_for_empty_text(self):
         """
         Given empty text
-        When checking if Swedish
-        Then returns False
+        It returns False
         """
         text = ""
         assert is_swedish(text) is False
