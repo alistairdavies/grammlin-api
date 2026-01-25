@@ -1,17 +1,17 @@
-from language.analysis.part_of_speech import PartOfSpeech, map_universal_pos
+from language.analysis.part_of_speech import map_universal_pos
 
 
 class TestMapUniversalPOS:
     def test_valid_pos_tag(self):
         """
         Given a valid universal tag
-        It returns the corresponding mapped PartOfSpeech instance
+        It returns the corresponding PartOfSpeechId
         """
         tag = "NOUN"
 
         result = map_universal_pos(tag)
 
-        assert result == PartOfSpeech(id="noun", title="Noun")
+        assert result == "noun"
 
     def test_invalid_pos_tag(self):
         """

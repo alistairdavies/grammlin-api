@@ -5,23 +5,19 @@ from pydantic import BaseModel
 
 from language.analysis.types import PartOfSpeechId
 
-# Mapping from Folkets Lexikon dictionary POS abbreviations
-# to application POS IDs
-DICTIONARY_POS_MAP: dict[str, PartOfSpeechId] = {
-    "nn": "noun",  # substantiv (noun)
-    "vb": "verb",  # verb
-    "jj": "adjective",  # adjektiv (adjective)
-    "ab": "adverb",  # adverb
-    "pn": "pronoun",  # pronomen (pronoun)
-    "pp": "preposition",  # preposition
-    "kn": "conjunction",  # konjunktion (conjunction)
-    "in": "interjection",  # interjektion (interjection)
-    "rg": "numeral",  # räkneord (numbers)
-    "pm": "noun",  # proprium (proper nouns)
-    "hp": "pronoun",  # interrogative/relative pronouns
-    "sn": "conjunction",  # subjunktion (subordinating conjunction)
-    "ps": "pronoun",  # possessive pronouns
-    "article": "determiner",
+# Mapping from application POS IDs to dictionary POS abbreviations
+POS_TO_DICTIONARY_MAP: dict[PartOfSpeechId, str] = {
+    "noun": "nn",
+    "verb": "vb",
+    "auxiliary_verb": "vb",
+    "adjective": "jj",
+    "adverb": "ab",
+    "pronoun": "pn",
+    "preposition": "pp",
+    "conjunction": "kn",
+    "interjection": "in",
+    "numeral": "rg",
+    "determiner": "article",
 }
 
 
@@ -133,7 +129,7 @@ class DictionaryService:
         )
 
     def search(
-        self, word: str, pos_filter: str | None = None
+        self, word: str, pos_filter: PartOfSpeechId | None = None
     ) -> list[DictionaryEntry]:
         """Search for a word in the dictionary with optional POS filtering.
 
@@ -157,11 +153,14 @@ class DictionaryService:
             return all_entries
 
         # Filter entries by POS
+        dictionary_pos = POS_TO_DICTIONARY_MAP.get(pos_filter)
+        if dictionary_pos is None:
+            return all_entries
+
         filtered_entries = [
             entry
             for entry in all_entries
-            if entry.part_of_speech is not None
-            and DICTIONARY_POS_MAP.get(entry.part_of_speech) == pos_filter
+            if entry.part_of_speech == dictionary_pos
         ]
 
         # If no matches found with filter, return all entries as fallback

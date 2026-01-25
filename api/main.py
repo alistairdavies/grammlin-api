@@ -9,7 +9,7 @@ from language.dictionary.service import DictionaryService
 api = FastAPI()
 
 api.add_middleware(
-    CORSMiddleware,
+    CORSMiddleware,  # type: ignore[arg-type]
     allow_origins="*",
     allow_credentials=True,
     allow_methods=["*"],

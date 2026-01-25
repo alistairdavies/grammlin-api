@@ -1,5 +1,6 @@
 from typing import Optional, Union
 
+from language.analysis.types import PartOfSpeechId
 from pydantic import BaseModel, Field
 
 from language.analysis.morphology import (
@@ -7,7 +8,6 @@ from language.analysis.morphology import (
     PronounMorphology,
     VerbMorphology,
 )
-from language.analysis.part_of_speech import PartOfSpeech
 from language.dictionary.service import Definition
 
 
@@ -16,7 +16,7 @@ class BaseToken(BaseModel):
     lemma: str = Field(
         description="The lemma or base form of the original word."
     )
-    part_of_speech: Optional[PartOfSpeech] = Field(
+    part_of_speech: Optional[PartOfSpeechId] = Field(
         description=(
             "The category of the word derived from the universal "
             "part of speech tag."

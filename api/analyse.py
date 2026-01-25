@@ -43,11 +43,10 @@ def analyse_sentence(req: AnalyseRequest) -> AnalyseResponse:
     from api.main import dictionary_service
 
     doc = nlp(req.sentence)
-    breakpoint()
     tokens = parse_tokens(doc)
 
     for token in tokens:
-        pos_filter = token.part_of_speech.id if token.part_of_speech else None
+        pos_filter = token.part_of_speech
         entries = dictionary_service.search(token.lemma.lower(), pos_filter)
         token.definitions = [
             Definition(
