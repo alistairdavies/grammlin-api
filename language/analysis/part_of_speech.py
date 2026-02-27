@@ -18,6 +18,8 @@ UNIVERSAL_POS_MAP: dict[str, PartOfSpeechId] = {
     "INTJ": "interjection",
     "PUNCT": "punctuation",
     "NUM": "numeral",
+    "SPACE": "whitespace",
+    "SYM": "symbol",
 }
 
 
