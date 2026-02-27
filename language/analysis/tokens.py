@@ -4,6 +4,7 @@ from language.analysis.types import PartOfSpeechId
 from pydantic import BaseModel, Field
 
 from language.analysis.morphology import (
+    AdjectiveMorphology,
     NounMorphology,
     PronounMorphology,
     VerbMorphology,
@@ -36,8 +37,12 @@ class VerbToken(BaseToken):
     morphology: VerbMorphology
 
 
+class AdjectiveToken(BaseToken):
+    morphology: AdjectiveMorphology
+
+
 class PronounToken(BaseToken):
     morphology: PronounMorphology
 
 
-Token = Union[NounToken, VerbToken, PronounToken, BaseToken]
+Token = Union[NounToken, VerbToken, AdjectiveToken, PronounToken, BaseToken]

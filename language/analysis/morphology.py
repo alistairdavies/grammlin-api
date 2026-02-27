@@ -2,6 +2,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from language.analysis.types import (
+    AdjectiveDegree,
     NounGender,
     NounDefiniteness,
     Plurality,
@@ -28,6 +29,12 @@ VERB_FORM_MAP: dict[str, VerbForm] = {
     "Inf": "infinitive",
     "Imp": "imperative",
     "Sup": "supine",
+}
+
+ADJECTIVE_DEGREE_MAP: dict[str, AdjectiveDegree] = {
+    "Pos": "positive",
+    "Cmp": "comparative",
+    "Sup": "superlative",
 }
 
 PRONOUN_FORM_MAP: dict[str, PronounForm] = {
@@ -59,6 +66,16 @@ class VerbMorphology(BaseModel):
         return cls(
             tense=VERB_TENSE_MAP.get(morph.get("Tense", "")),
             form=VERB_FORM_MAP.get(morph.get("VerbForm", "")),
+        )
+
+
+class AdjectiveMorphology(BaseModel):
+    degree: Optional[AdjectiveDegree] = None
+
+    @classmethod
+    def build(cls, morph: dict[str, str]) -> "AdjectiveMorphology":
+        return cls(
+            degree=ADJECTIVE_DEGREE_MAP.get(morph.get("Degree", "")),
         )
 
 

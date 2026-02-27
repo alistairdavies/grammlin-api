@@ -25,3 +25,5 @@ VerbTense = Literal["past tense", "present tense"]
 VerbForm = Literal["infinitive", "supine", "imperative"]
 
 PronounForm = Literal["object", "possessive", "subject"]
+
+AdjectiveDegree = Literal["positive", "comparative", "superlative"]

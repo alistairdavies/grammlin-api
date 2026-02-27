@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, field_validator
 from language.analysis.models import load_swedish_model
 from language.analysis.parser import parse_tokens
 from language.analysis.tokens import (
+    AdjectiveToken,
     BaseToken,
     NounToken,
     PronounToken,
@@ -35,7 +36,9 @@ class AnalyseRequest(BaseModel):
 
 
 class AnalyseResponse(BaseModel):
-    tokens: list[NounToken | VerbToken | PronounToken | BaseToken]
+    tokens: list[
+        NounToken | VerbToken | AdjectiveToken | PronounToken | BaseToken
+    ]
 
 
 @router.post("/analyse", response_model=AnalyseResponse)

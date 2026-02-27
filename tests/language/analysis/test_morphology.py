@@ -1,4 +1,5 @@
 from language.analysis.morphology import (
+    AdjectiveMorphology,
     NounMorphology,
     VerbMorphology,
     PronounMorphology,
@@ -75,6 +76,61 @@ class TestVerbMorphology_build:
         result = VerbMorphology.build({})
 
         assert result == VerbMorphology(tense=None, form=None)
+
+
+class TestAdjectiveMorphology_build:
+    def test_returns_positive_degree(self):
+        """
+        Given a morphology dictionary with positive degree
+        It returns adjective with positive degree
+        """
+        morph_dict = {"Degree": "Pos"}
+
+        result = AdjectiveMorphology.build(morph_dict)
+
+        assert result == AdjectiveMorphology(degree="positive")
+
+    def test_returns_comparative_degree(self):
+        """
+        Given a morphology dictionary with comparative degree
+        It returns adjective with comparative degree
+        """
+        morph_dict = {"Degree": "Cmp"}
+
+        result = AdjectiveMorphology.build(morph_dict)
+
+        assert result == AdjectiveMorphology(degree="comparative")
+
+    def test_returns_superlative_degree(self):
+        """
+        Given a morphology dictionary with superlative degree
+        It returns adjective with superlative degree
+        """
+        morph_dict = {"Degree": "Sup"}
+
+        result = AdjectiveMorphology.build(morph_dict)
+
+        assert result == AdjectiveMorphology(degree="superlative")
+
+    def test_returns_none_if_missing(self):
+        """
+        Given an empty morphology dictionary
+        It returns adjective with None degree
+        """
+        result = AdjectiveMorphology.build({})
+
+        assert result == AdjectiveMorphology(degree=None)
+
+    def test_returns_none_if_unknown(self):
+        """
+        Given a morphology dictionary with an unknown degree value
+        It returns adjective with None degree
+        """
+        morph_dict = {"Degree": "foo"}
+
+        result = AdjectiveMorphology.build(morph_dict)
+
+        assert result == AdjectiveMorphology(degree=None)
 
 
 class TestPronounMorphology_build:
