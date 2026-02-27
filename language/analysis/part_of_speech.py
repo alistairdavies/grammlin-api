@@ -3,6 +3,8 @@ from typing import Optional
 from language.analysis.types import PartOfSpeechId
 
 
+FILTERED_POS: set[str] = {"PUNCT", "SPACE", "SYM"}
+
 UNIVERSAL_POS_MAP: dict[str, PartOfSpeechId] = {
     "NOUN": "noun",
     "PROPN": "noun",
@@ -16,15 +18,12 @@ UNIVERSAL_POS_MAP: dict[str, PartOfSpeechId] = {
     "SCONJ": "conjunction",
     "ADP": "preposition",
     "INTJ": "interjection",
-    "PUNCT": "punctuation",
     "NUM": "numeral",
-    "SPACE": "whitespace",
-    "SYM": "symbol",
 }
 
 
-def is_punctuation(pos: str) -> bool:
-    return pos == "PUNCT"
+def is_filtered_pos(pos: str) -> bool:
+    return pos in FILTERED_POS
 
 
 def map_universal_pos(pos: str) -> Optional[PartOfSpeechId]:

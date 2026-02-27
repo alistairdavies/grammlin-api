@@ -7,8 +7,10 @@ from language.analysis.morphology import (
     PronounMorphology,
     VerbMorphology,
 )
-from language.analysis.part_of_speech import map_universal_pos
-from language.analysis.types import PartOfSpeechId
+from language.analysis.part_of_speech import (
+    is_filtered_pos,
+    map_universal_pos,
+)
 
 from language.analysis.tokens import (
     AdjectiveToken,
@@ -17,12 +19,6 @@ from language.analysis.tokens import (
     PronounToken,
     VerbToken,
 )
-
-FILTERED_POS: set[PartOfSpeechId] = {
-    "punctuation",
-    "whitespace",
-    "symbol",
-}
 
 
 def parse_token(
@@ -36,10 +32,10 @@ def parse_token(
         BaseToken,
     ]
 ]:
-    pos = map_universal_pos(token.pos_)
-
-    if pos in FILTERED_POS:
+    if is_filtered_pos(token.pos_):
         return None
+
+    pos = map_universal_pos(token.pos_)
 
     if pos is not None:
         if pos == "noun":

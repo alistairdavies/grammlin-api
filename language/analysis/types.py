@@ -12,9 +12,6 @@ PartOfSpeechId = Literal[
     "conjunction",
     "preposition",
     "interjection",
-    "punctuation",
-    "whitespace",
-    "symbol",
 ]
 
 NounGender = Literal["common", "neuter"]
