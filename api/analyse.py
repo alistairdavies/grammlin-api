@@ -11,7 +11,7 @@ from language.analysis.tokens import (
     VerbToken,
 )
 from language.detection import is_swedish
-from language.dictionary.service import Definition
+from language.analysis.tokens import Definition
 
 nlp = load_swedish_model()
 router = APIRouter()
@@ -43,14 +43,14 @@ class AnalyseResponse(BaseModel):
 
 @router.post("/analyse", response_model=AnalyseResponse)
 def analyse_sentence(req: AnalyseRequest) -> AnalyseResponse:
-    from api.main import dictionary_service
+    from api.main import dictionary_store
 
     doc = nlp(req.sentence)
     tokens = parse_tokens(doc)
 
     for token in tokens:
         pos_filter = token.part_of_speech
-        entries = dictionary_service.search(token.lemma.lower(), pos_filter)
+        entries = dictionary_store.search(token.lemma.lower(), pos_filter)
         token.definitions = [
             Definition(
                 translations=entry.translations, definition=entry.definition

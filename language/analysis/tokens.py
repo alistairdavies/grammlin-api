@@ -1,6 +1,5 @@
 from typing import Optional, Union
 
-from language.analysis.types import PartOfSpeechId
 from pydantic import BaseModel, Field
 
 from language.analysis.morphology import (
@@ -9,7 +8,12 @@ from language.analysis.morphology import (
     PronounMorphology,
     VerbMorphology,
 )
-from language.dictionary.service import Definition
+from language.analysis.types import PartOfSpeechId
+
+
+class Definition(BaseModel):
+    translations: list[str]
+    definition: str | None = None
 
 
 class BaseToken(BaseModel):
