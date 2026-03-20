@@ -33,29 +33,38 @@ FROM entries WHERE headword = ?
 
 class SqliteDictionaryStore:
     def __init__(self, db_path: str | Path):
-        self._conn = sqlite3.connect(db_path, check_same_thread=False)
-        self._conn.row_factory = sqlite3.Row
-        self._conn.execute(CREATE_TABLE)
-        self._conn.execute(CREATE_INDEX)
+        self._db_path = str(db_path)
+        self._ensure_schema()
+
+    def _connect(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(self._db_path)
+        conn.row_factory = sqlite3.Row
+        return conn
+
+    def _ensure_schema(self) -> None:
+        with self._connect() as conn:
+            conn.execute(CREATE_TABLE)
+            conn.execute(CREATE_INDEX)
 
     def add_entry(self, entry: DictionaryEntry) -> None:
-        self._conn.execute(
-            INSERT_ENTRY,
-            (
-                entry.headword,
-                entry.part_of_speech,
-                json.dumps(entry.translations),
-                entry.definition,
-            ),
-        )
-        self._conn.commit()
+        with self._connect() as conn:
+            conn.execute(
+                INSERT_ENTRY,
+                (
+                    entry.headword,
+                    entry.part_of_speech,
+                    json.dumps(entry.translations),
+                    entry.definition,
+                ),
+            )
 
     def search(
         self, word: str, pos_filter: PartOfSpeechId | None = None
     ) -> list[DictionaryEntry]:
-        rows = self._conn.execute(
-            SELECT_BY_HEADWORD, (word.lower(),)
-        ).fetchall()
+        with self._connect() as conn:
+            rows = conn.execute(
+                SELECT_BY_HEADWORD, (word.lower(),)
+            ).fetchall()
 
         if not rows:
             return []
