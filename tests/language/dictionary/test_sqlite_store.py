@@ -39,9 +39,7 @@ class TestSqliteDictionaryStore_search:
 
         assert len(result) == 2
 
-    def test_filters_by_pos_when_filter_provided(
-        self, tmp_path: Path
-    ):
+    def test_filters_by_pos_when_filter_provided(self, tmp_path: Path):
         """
         Given a word and a pos filter
         It returns the list of matching entries in the dictionary
@@ -64,9 +62,7 @@ class TestSqliteDictionaryStore_search:
         assert len(result) == 1
         assert result[0].part_of_speech == "noun"
 
-    def test_falls_back_to_all_when_no_pos_match(
-        self, tmp_path: Path
-    ):
+    def test_falls_back_to_all_when_no_pos_match(self, tmp_path: Path):
         """
         Given a word and a pos filter
         When the word is in the dictionary but has no pos tag
@@ -86,9 +82,7 @@ class TestSqliteDictionaryStore_search:
         It returns dictionary entries case insensitively
         """
         store = SqliteDictionaryStore(tmp_path / "test.db")
-        store.add_entry(
-            DictionaryEntryFactory.create(headword="bank")
-        )
+        store.add_entry(DictionaryEntryFactory.create(headword="bank"))
 
         assert len(store.search("Bank")) == 1
         assert len(store.search("BANK")) == 1

@@ -62,9 +62,7 @@ class SqliteDictionaryStore:
         self, word: str, pos_filter: PartOfSpeechId | None = None
     ) -> list[DictionaryEntry]:
         with self._connect() as conn:
-            rows = conn.execute(
-                SELECT_BY_HEADWORD, (word.lower(),)
-            ).fetchall()
+            rows = conn.execute(SELECT_BY_HEADWORD, (word.lower(),)).fetchall()
 
         if not rows:
             return []
