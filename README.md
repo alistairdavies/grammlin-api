@@ -1,4 +1,7 @@
-# Swedish Grammar
+# Grammlin API
+
+A basic API to provide grammatical information and word definitions for the Swedish language from the [spacy NLP model](https://spacy.io/models/sv) and [the peoples dictionary (folkets lexicon)](https://folkets-lexikon.csc.kth.se/folkets/om.html).
+
 ## Local Development
 1. Create a Python virtual environment:
 ```sh
