@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from language.dictionary.folkets import parse
+from language.dictionary.folkets.parser import parse
 from language.dictionary.sqlite_store import SqliteDictionaryStore
 
 XDXF_PATH = Path("folkets_sv_en.xdxf")

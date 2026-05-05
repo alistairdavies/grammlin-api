@@ -1,5 +1,6 @@
 from typing import Literal
 
+# https://universaldependencies.org/u/pos/
 PartOfSpeechId = Literal[
     "noun",
     "numeral",
