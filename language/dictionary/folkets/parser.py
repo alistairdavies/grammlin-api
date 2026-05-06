@@ -49,7 +49,6 @@ def parse(path: Path) -> Iterator[DictionaryEntry]:
 def _parse_articles(
     articles: Iterable[ElementTree.Element],
 ) -> Iterator[DictionaryEntry]:
-    d = 0
     for article in articles:
         definition = article.find("def")
         if definition is None:
@@ -57,16 +56,12 @@ def _parse_articles(
 
         headword, compound_parts = parse_key_phrase(article)
 
-        if compound_parts:
-            d += 1
-            print(d)
-
         yield DictionaryEntry(
             headword=headword,
             part_of_speech=parse_part_of_speech(definition),
             translations=parse_translations(definition),
             definition=parse_definition(definition),
-            conjunction_parts=compound_parts,
+            compound_parts=compound_parts,
         )
 
 

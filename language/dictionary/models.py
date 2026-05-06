@@ -8,4 +8,4 @@ class DictionaryEntry(BaseModel):
     part_of_speech: PartOfSpeechId | None
     translations: list[str]
     definition: str | None
-    conjunction_parts: list[str] | None
+    compound_parts: list[str] | None

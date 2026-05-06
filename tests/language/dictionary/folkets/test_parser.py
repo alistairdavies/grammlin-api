@@ -97,21 +97,21 @@ class TestParse:
                 part_of_speech="verb",
                 translations=["Walk"],
                 definition="Going on a walk",
-                conjunction_parts=None,
+                compound_parts=None,
             ),
             DictionaryEntry(
                 headword="katt",
                 part_of_speech="noun",
                 translations=["cat"],
                 definition="a domesticated animal",
-                conjunction_parts=None,
+                compound_parts=None,
             ),
         ]
 
-    def test_parses_conjunction_entries(self, tmp_path: Path):
+    def test_parses_compound_entries(self, tmp_path: Path):
         """
-        Given valid XDXF file with conjunction entries
-        It returns a DictionaryEntry for the conjunction
+        Given valid XDXF file with compound entries
+        It returns a DictionaryEntry for the compound
         """
         entries = """
         <ar>
@@ -131,7 +131,7 @@ class TestParse:
                 part_of_speech="noun",
                 translations=[],
                 definition=None,
-                conjunction_parts=["skott", "kärra"],
+                compound_parts=["skott", "kärra"],
             ),
         ]
 

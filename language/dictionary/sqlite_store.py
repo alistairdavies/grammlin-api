@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS entries (
     part_of_speech TEXT,
     translations TEXT NOT NULL,
     definition TEXT,
-    conjunction_parts TEXT
+    compound_parts TEXT
 )
 """
 
@@ -22,7 +22,8 @@ ON entries(headword, part_of_speech)
 """
 
 INSERT_ENTRY = """
-INSERT INTO entries (headword, part_of_speech, translations, definition, conjunction_parts)
+INSERT INTO entries
+(headword, part_of_speech, translations, definition, compound_parts)
 VALUES (?, ?, ?, ?, ?)
 """
 
@@ -56,7 +57,7 @@ class SqliteDictionaryStore:
                     entry.part_of_speech,
                     json.dumps(entry.translations),
                     entry.definition,
-                    json.dumps(entry.conjunction_parts),
+                    json.dumps(entry.compound_parts),
                 ),
             )
 
@@ -94,5 +95,5 @@ class SqliteDictionaryStore:
             part_of_speech=row["part_of_speech"],
             translations=json.loads(row["translations"]),
             definition=row["definition"],
-            conjunction_parts=None,
+            compound_parts=None,
         )
