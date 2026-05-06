@@ -11,3 +11,4 @@ class DictionaryEntryFactory(factory.Factory):
     part_of_speech = "noun"
     translations = factory.LazyFunction(lambda: [])
     definition = factory.Faker("sentence")
+    compound_parts = None

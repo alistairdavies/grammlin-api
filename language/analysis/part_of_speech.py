@@ -2,7 +2,6 @@ from typing import Optional
 
 from language.analysis.types import PartOfSpeechId
 
-
 FILTERED_POS: set[str] = {"PUNCT", "SPACE", "SYM"}
 
 UNIVERSAL_POS_MAP: dict[str, PartOfSpeechId] = {
