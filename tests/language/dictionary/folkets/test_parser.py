@@ -97,12 +97,41 @@ class TestParse:
                 part_of_speech="verb",
                 translations=["Walk"],
                 definition="Going on a walk",
+                conjunction_parts=None,
             ),
             DictionaryEntry(
                 headword="katt",
                 part_of_speech="noun",
                 translations=["cat"],
                 definition="a domesticated animal",
+                conjunction_parts=None,
+            ),
+        ]
+
+    def test_parses_conjunction_entries(self, tmp_path: Path):
+        """
+        Given valid XDXF file with conjunction entries
+        It returns a DictionaryEntry for the conjunction
+        """
+        entries = """
+        <ar>
+            <k>skott|kärra</k>
+            <def>
+                <gr>nn</gr>
+            </def>
+        </ar>
+        """
+        xdxf = create_xdxf(tmp_path, entries)
+
+        result = list(parse(xdxf))
+
+        assert result == [
+            DictionaryEntry(
+                headword="skottkärra",
+                part_of_speech="noun",
+                translations=[],
+                definition=None,
+                conjunction_parts=["skott", "kärra"],
             ),
         ]
 
@@ -118,14 +147,39 @@ class TestParseKeyPhrase:
         with pytest.raises(ArticleMissingKeyPhrase):
             parse_key_phrase(article_element)
 
-    def test_returns_sanitised_key_phrase(self):
+    def test_returns_non_compound_key_phrase(self):
+        """
+        Given an article with a regular key phrase
+        It returns the key phrase unmodified with no compound parts
+        It returns the key phrase with capitals and whitespace removed
+        """
+        article_element = ElementTree.XML("<ar><k>food</k></ar>")
+
+        result, compound_parts = parse_key_phrase(article_element)
+
+        assert result == "food"
+        assert compound_parts is None
+
+    def test_returns_compound_key_phrase(self):
+        """
+        Given an article with a key phrase that is a compound
+        It returns the combined compounds and its substituent parts
+        """
+        article_element = ElementTree.XML("<ar><k>barn|skola</k></ar>")
+
+        word, compound_parts = parse_key_phrase(article_element)
+
+        assert word == "barnskola"
+        assert compound_parts == ["barn", "skola"]
+
+    def test_sanitises_whitespace(self):
         """
         Given an article with a key phrase
-        It returns the key phrase with capitals and whitespace removed
+        It returns the key phrase with excess capitals or whitespace removed
         """
         article_element = ElementTree.XML("<ar><k>  FOoD </k></ar>")
 
-        result = parse_key_phrase(article_element)
+        result, _ = parse_key_phrase(article_element)
 
         assert result == "food"
 

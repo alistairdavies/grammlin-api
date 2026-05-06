@@ -49,25 +49,41 @@ def parse(path: Path) -> Iterator[DictionaryEntry]:
 def _parse_articles(
     articles: Iterable[ElementTree.Element],
 ) -> Iterator[DictionaryEntry]:
+    d = 0
     for article in articles:
         definition = article.find("def")
         if definition is None:
             continue
 
+        headword, compound_parts = parse_key_phrase(article)
+
+        if compound_parts:
+            d += 1
+            print(d)
+
         yield DictionaryEntry(
-            headword=parse_key_phrase(article),
+            headword=headword,
             part_of_speech=parse_part_of_speech(definition),
             translations=parse_translations(definition),
             definition=parse_definition(definition),
+            conjunction_parts=compound_parts,
         )
 
 
-def parse_key_phrase(article: ElementTree.Element) -> str:
+def parse_key_phrase(
+    article: ElementTree.Element,
+) -> tuple[str, list[str] | None]:
     key_phrase = article.find("k")
     if key_phrase is None or not key_phrase.text:
         raise ArticleMissingKeyPhrase
 
-    return key_phrase.text.strip().lower()
+    headword = key_phrase.text.strip().lower()
+
+    if "|" in headword:
+        compound_parts = headword.split("|")
+        return "".join(compound_parts), compound_parts
+    else:
+        return headword, None
 
 
 def parse_translations(definition: ElementTree.Element) -> list[str]:
