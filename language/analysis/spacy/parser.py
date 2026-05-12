@@ -1,5 +1,5 @@
-from typing import Optional, Union
-from spacy.tokens import Doc, Token
+from typing import Optional
+from spacy.tokens import Doc, Token as SpacyToken
 
 from language.analysis.morphology import (
     AdjectiveMorphology,
@@ -17,21 +17,14 @@ from language.analysis.tokens import (
     BaseToken,
     NounToken,
     PronounToken,
+    Token,
     VerbToken,
 )
 
 
 def parse_token(
-    token: Token,
-) -> Optional[
-    Union[
-        NounToken,
-        VerbToken,
-        AdjectiveToken,
-        PronounToken,
-        BaseToken,
-    ]
-]:
+    token: SpacyToken,
+) -> Optional[Token]:
     if is_filtered_pos(token.pos_):
         return None
 
@@ -76,24 +69,8 @@ def parse_token(
 
 def parse_tokens(
     doc: Doc,
-) -> list[
-    Union[
-        NounToken,
-        VerbToken,
-        AdjectiveToken,
-        PronounToken,
-        BaseToken,
-    ]
-]:
-    tokens: list[
-        Union[
-            NounToken,
-            VerbToken,
-            AdjectiveToken,
-            PronounToken,
-            BaseToken,
-        ]
-    ] = []
+) -> list[Token]:
+    tokens: list[Token] = []
     for token in doc:
         parsed_token = parse_token(token)
         if parsed_token is not None:
