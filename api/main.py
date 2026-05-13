@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api import analyse, health
-from language.analysis.stanza.analyser import StanzaNLPAnalyser
 from language.dictionary.sqlite_store import SqliteDictionaryStore
+from language.analysis.stanza.analyser import StanzaNLPAnalyser
 
 api = FastAPI()
 
@@ -17,7 +17,6 @@ api.add_middleware(
     allow_headers=["*"],
 )
 
-# analyser = SpacyNLPAnalyser()
 analyser = StanzaNLPAnalyser()
 dictionary_store = SqliteDictionaryStore(Path("folkets_sv_en.db"))
 

@@ -36,28 +36,28 @@ def parse_token(
                 text=token.text,
                 lemma=token.lemma_,
                 part_of_speech=pos,
-                morphology=NounMorphology.build(token.morph.to_dict()),
+                morphology=NounMorphology.build(str(token.morph)),
             )
         elif pos == "pronoun":
             return PronounToken(
                 text=token.text,
                 lemma=token.lemma_,
                 part_of_speech=pos,
-                morphology=PronounMorphology.build(token.morph.to_dict()),
+                morphology=PronounMorphology.build(str(token.morph)),
             )
         elif pos == "adjective":
             return AdjectiveToken(
                 text=token.text,
                 lemma=token.lemma_,
                 part_of_speech=pos,
-                morphology=AdjectiveMorphology.build(token.morph.to_dict()),
+                morphology=AdjectiveMorphology.build(str(token.morph)),
             )
         elif pos == "verb" or pos == "auxiliary_verb":
             return VerbToken(
                 text=token.text,
                 lemma=token.lemma_,
                 part_of_speech=pos,
-                morphology=VerbMorphology.build(token.morph.to_dict()),
+                morphology=VerbMorphology.build(str(token.morph)),
             )
 
     return BaseToken(
