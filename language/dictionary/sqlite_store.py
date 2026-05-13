@@ -72,9 +72,7 @@ class SqliteDictionaryStore:
 
         all_entries = [self._row_to_entry(row) for row in rows]
 
-        filtered = self._filter_by_pos(all_entries, pos_filter)
-
-        return filtered if filtered else all_entries
+        return self._filter_by_pos(all_entries, pos_filter)
 
     def _filter_by_pos(
         self, entries: list[DictionaryEntry], pos_filter: PartOfSpeechId | None

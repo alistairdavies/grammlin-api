@@ -62,11 +62,11 @@ class TestSqliteDictionaryStore_search:
         assert len(result) == 1
         assert result[0].part_of_speech == "noun"
 
-    def test_falls_back_to_all_when_no_pos_match(self, tmp_path: Path):
+    def test_returns_nothing_when_no_pos_match(self, tmp_path: Path):
         """
         Given a word and a pos filter
         When the word is in the dictionary but has no pos tag
-        It returns the word definition
+        It does not return any matches
         """
         store = SqliteDictionaryStore(tmp_path / "test.db")
         entry = DictionaryEntryFactory.create(part_of_speech=None)
@@ -74,7 +74,7 @@ class TestSqliteDictionaryStore_search:
 
         result = store.search(entry.headword, pos_filter="verb")
 
-        assert len(result) == 1
+        assert len(result) == 0
 
     def test_search_is_case_insensitive(self, tmp_path: Path):
         """

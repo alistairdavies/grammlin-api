@@ -9,12 +9,12 @@ from language.analysis.morphology import (
 class TestNounMorphology_build:
     def test_returns_mapped_valid_values(self):
         """
-        Given a morphology dictionary with known values
+        Given a morphology string with known values
         It returns the dataclass with sanitised values
         """
-        morph_dict = {"Gender": "Com", "Number": "Sing", "Definite": "Def"}
+        morph = "Gender=Com|Number=Sing|Definite=Def"
 
-        result = NounMorphology.build(morph_dict)
+        result = NounMorphology.build(morph)
 
         assert result == NounMorphology(
             gender="common", definiteness="definite", plurality="singular"
@@ -22,12 +22,12 @@ class TestNounMorphology_build:
 
     def test_returns_none_values_if_unknown(self):
         """
-        Given a morphology dictionary with known values
-        It returns the dataclass with sanitised values
+        Given a morphology string with unknown values
+        It returns the dataclass with None values
         """
-        morph_dict = {"Gender": "what", "Number": "is", "Definite": "this"}
+        morph = "Gender=something|Number=really|Definite=strange"
 
-        result = NounMorphology.build(morph_dict)
+        result = NounMorphology.build(morph)
 
         assert result == NounMorphology(
             gender=None, definiteness=None, plurality=None
@@ -35,10 +35,10 @@ class TestNounMorphology_build:
 
     def test_returns_none_values_if_missing(self):
         """
-        Given a morphology dictionary with missing values
+        Given a morphology string with missing values
         It returns the dataclass with None values
         """
-        result = NounMorphology.build({})
+        result = NounMorphology.build("Case=foo")
 
         assert result == NounMorphology(
             gender=None, definiteness=None, plurality=None
@@ -48,32 +48,32 @@ class TestNounMorphology_build:
 class TestVerbMorphology_build:
     def test_returns_mapped_valid_values(self):
         """
-        Given a morphology dictionary with known values
+        Given a morphology string with known values
         It returns the dataclass with sanitised values
         """
-        morph_dict = {"Tense": "Pres"}
+        morph = "Tense=Pres"
 
-        result = VerbMorphology.build(morph_dict)
+        result = VerbMorphology.build(morph)
 
         assert result == VerbMorphology(tense="present tense", form=None)
 
     def test_returns_none_values_if_unknown(self):
         """
-        Given a morphology dictionary with known values
-        It returns the dataclass with sanitised values
+        Given a morphology string with unknown values
+        It returns the dataclass with None values
         """
-        morph_dict = {"Tense": "foo"}
+        morph = "Tense=foo"
 
-        result = VerbMorphology.build(morph_dict)
+        result = VerbMorphology.build(morph)
 
         assert result == VerbMorphology(tense=None, form=None)
 
     def test_returns_none_values_if_missing(self):
         """
-        Given a morphology dictionary with missing values
+        Given a morphology string with missing values
         It returns the dataclass with None values
         """
-        result = VerbMorphology.build({})
+        result = VerbMorphology.build("")
 
         assert result == VerbMorphology(tense=None, form=None)
 
@@ -81,86 +81,62 @@ class TestVerbMorphology_build:
 class TestAdjectiveMorphology_build:
     def test_returns_positive_degree(self):
         """
-        Given a morphology dictionary with positive degree
-        It returns adjective with positive degree
+        Given a morphology string with known values
+        It returns the dataclass with sanitised values
         """
-        morph_dict = {"Degree": "Pos"}
+        morph = "Degree=Pos"
 
-        result = AdjectiveMorphology.build(morph_dict)
+        result = AdjectiveMorphology.build(morph)
 
         assert result == AdjectiveMorphology(degree="positive")
 
-    def test_returns_comparative_degree(self):
-        """
-        Given a morphology dictionary with comparative degree
-        It returns adjective with comparative degree
-        """
-        morph_dict = {"Degree": "Cmp"}
-
-        result = AdjectiveMorphology.build(morph_dict)
-
-        assert result == AdjectiveMorphology(degree="comparative")
-
-    def test_returns_superlative_degree(self):
-        """
-        Given a morphology dictionary with superlative degree
-        It returns adjective with superlative degree
-        """
-        morph_dict = {"Degree": "Sup"}
-
-        result = AdjectiveMorphology.build(morph_dict)
-
-        assert result == AdjectiveMorphology(degree="superlative")
-
     def test_returns_none_if_missing(self):
         """
-        Given an empty morphology dictionary
+        Given an empty morphology string
         It returns adjective with None degree
         """
-        result = AdjectiveMorphology.build({})
+        result = AdjectiveMorphology.build("")
 
         assert result == AdjectiveMorphology(degree=None)
 
     def test_returns_none_if_unknown(self):
         """
-        Given a morphology dictionary with an unknown degree value
+        Given a morphology string with an unknown degree value
         It returns adjective with None degree
         """
-        morph_dict = {"Degree": "foo"}
+        morph = "Degree=foo"
 
-        result = AdjectiveMorphology.build(morph_dict)
+        result = AdjectiveMorphology.build(morph)
 
         assert result == AdjectiveMorphology(degree=None)
 
 
 class TestPronounMorphology_build:
-    def test_returns_subject_form(self):
+    def test_returns_known_values(self):
         """
-        Given a morphology dictionary with nominative case
-        It returns pronoun with subject form
+        Given a morphology string with known values
+        It returns the dataclass with sanitised values
         """
-        morph_dict = {"Case": "Nom"}
+        morph = "Case=Nom"
 
-        result = PronounMorphology.build(morph_dict)
+        result = PronounMorphology.build(morph)
 
         assert result == PronounMorphology(form="subject")
 
-    def test_returns_object_form(self):
+    def test_returns_none_for_unknown_value(self):
         """
-        Given a morphology dictionary with accusative case
-        It returns pronoun with object form
+        Given a morphology string with an unknown case value
+        It returns pronoun with possessive form as default
         """
-        morph_dict = {"Case": "Acc"}
+        result = PronounMorphology.build("Case=foo|foo=bar")
 
-        result = PronounMorphology.build(morph_dict)
-
-        assert result == PronounMorphology(form="object")
+        assert result == PronounMorphology(form="possessive")
 
     def test_returns_possessive_form_when_no_case(self):
         """
-        Given a morphology dictionary without a case field
+        Given a morphology string without a case field
         It returns pronoun with possessive form as default
         """
-        result = PronounMorphology.build({})
+        result = PronounMorphology.build("")
 
         assert result == PronounMorphology(form="possessive")

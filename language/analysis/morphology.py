@@ -43,17 +43,26 @@ PRONOUN_FORM_MAP: dict[str, PronounForm] = {
 }
 
 
+def _morph_string_to_dict(morph: str) -> dict[str, str]:
+    if "=" not in morph:
+        return {}
+
+    return dict(field.split("=", 1) for field in morph.split("|"))
+
+
 class NounMorphology(BaseModel):
     gender: Optional[NounGender] = None
     definiteness: Optional[NounDefiniteness] = None
     plurality: Optional[Plurality] = None
 
     @classmethod
-    def build(cls, morph: dict[str, str]) -> "NounMorphology":
+    def build(cls, morph: str) -> "NounMorphology":
+        morph_dict = _morph_string_to_dict(morph)
+
         return cls(
-            gender=GENDER_MAP.get(morph.get("Gender", "")),
-            plurality=PLURALITY_MAP.get(morph.get("Number", "")),
-            definiteness=DEFINITENESS_MAP.get(morph.get("Definite", "")),
+            gender=GENDER_MAP.get(morph_dict.get("Gender", "")),
+            plurality=PLURALITY_MAP.get(morph_dict.get("Number", "")),
+            definiteness=DEFINITENESS_MAP.get(morph_dict.get("Definite", "")),
         )
 
 
@@ -62,10 +71,12 @@ class VerbMorphology(BaseModel):
     form: Optional[VerbForm] = None
 
     @classmethod
-    def build(cls, morph: dict[str, str]) -> "VerbMorphology":
+    def build(cls, morph: str) -> "VerbMorphology":
+        morph_dict = _morph_string_to_dict(morph)
+
         return cls(
-            tense=VERB_TENSE_MAP.get(morph.get("Tense", "")),
-            form=VERB_FORM_MAP.get(morph.get("VerbForm", "")),
+            tense=VERB_TENSE_MAP.get(morph_dict.get("Tense", "")),
+            form=VERB_FORM_MAP.get(morph_dict.get("VerbForm", "")),
         )
 
 
@@ -73,9 +84,11 @@ class AdjectiveMorphology(BaseModel):
     degree: Optional[AdjectiveDegree] = None
 
     @classmethod
-    def build(cls, morph: dict[str, str]) -> "AdjectiveMorphology":
+    def build(cls, morph: str) -> "AdjectiveMorphology":
+        morph_dict = _morph_string_to_dict(morph)
+
         return cls(
-            degree=ADJECTIVE_DEGREE_MAP.get(morph.get("Degree", "")),
+            degree=ADJECTIVE_DEGREE_MAP.get(morph_dict.get("Degree", "")),
         )
 
 
@@ -83,8 +96,11 @@ class PronounMorphology(BaseModel):
     form: PronounForm
 
     @classmethod
-    def build(cls, morph: dict[str, str]) -> "PronounMorphology":
-        # Spacy does not return a 'case' for the pronoun when possessive.
+    def build(cls, morph: str) -> "PronounMorphology":
+        morph_dict = _morph_string_to_dict(morph)
+
         return cls(
-            form=PRONOUN_FORM_MAP.get(morph.get("Case", ""), "possessive"),
+            form=PRONOUN_FORM_MAP.get(
+                morph_dict.get("Case", ""), "possessive"
+            ),
         )

@@ -1,8 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
 
-from language.analysis.models import load_swedish_model
-from language.analysis.parser import parse_tokens
 from language.analysis.tokens import (
     AdjectiveToken,
     BaseToken,
@@ -13,7 +11,6 @@ from language.analysis.tokens import (
 from language.detection import is_swedish
 from language.analysis.tokens import Definition
 
-nlp = load_swedish_model()
 router = APIRouter()
 
 
@@ -43,10 +40,9 @@ class AnalyseResponse(BaseModel):
 
 @router.post("/analyse", response_model=AnalyseResponse)
 def analyse_sentence(req: AnalyseRequest) -> AnalyseResponse:
-    from api.main import dictionary_store
+    from api.main import dictionary_store, analyser
 
-    doc = nlp(req.sentence)
-    tokens = parse_tokens(doc)
+    tokens = analyser.analyse(req.sentence)
 
     for token in tokens:
         pos_filter = token.part_of_speech

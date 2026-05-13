@@ -8,6 +8,7 @@ dependencies = [
     "fastapi>=0.117.1",
     "lingua-language-detector>=2.0.2",
     "spacy[sv]>=3.8.7",
+    "stanza>=1.11.1",
     "sv-core-news-md",
     "uvicorn>=0.37.0",
 ]
