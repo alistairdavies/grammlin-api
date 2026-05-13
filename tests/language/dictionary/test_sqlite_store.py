@@ -42,7 +42,8 @@ class TestSqliteDictionaryStore_search:
     def test_filters_by_pos_when_filter_provided(self, tmp_path: Path):
         """
         Given a word and a pos filter
-        It returns the list of matching entries in the dictionary
+        When there is an exact word and pos match
+        It returns only the exact matches from the dictionary
         """
         store = SqliteDictionaryStore(tmp_path / "test.db")
         headword = "bank"
@@ -56,17 +57,23 @@ class TestSqliteDictionaryStore_search:
                 headword=headword, part_of_speech="verb"
             )
         )
+        store.add_entry(
+            DictionaryEntryFactory.create(
+                headword=headword, part_of_speech=None
+            )
+        )
 
         result = store.search(headword, pos_filter="noun")
 
         assert len(result) == 1
         assert result[0].part_of_speech == "noun"
+        assert result[0].headword == headword
 
-    def test_returns_nothing_when_no_pos_match(self, tmp_path: Path):
+    def test_returns_a_match_when_dictionary_missing_pos(self, tmp_path: Path):
         """
         Given a word and a pos filter
         When the word is in the dictionary but has no pos tag
-        It does not return any matches
+        It returns the entry without a pos tag
         """
         store = SqliteDictionaryStore(tmp_path / "test.db")
         entry = DictionaryEntryFactory.create(part_of_speech=None)
@@ -74,7 +81,23 @@ class TestSqliteDictionaryStore_search:
 
         result = store.search(entry.headword, pos_filter="verb")
 
-        assert len(result) == 0
+        assert len(result) == 1
+
+    def test_returns_nothing_when_pos_does_not_match(self, tmp_path: Path):
+        """
+        Given a word and a pos filter
+        When the word is in the dictionary and does not match the pos tag
+        It does not return any matches
+        """
+        store = SqliteDictionaryStore(tmp_path / "test.db")
+        entry = DictionaryEntryFactory.create(
+            headword="nice", part_of_speech=None
+        )
+        store.add_entry(entry)
+
+        result = store.search(entry.headword, pos_filter="verb")
+
+        assert len(result) == 1
 
     def test_search_is_case_insensitive(self, tmp_path: Path):
         """

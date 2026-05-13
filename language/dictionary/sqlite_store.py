@@ -71,8 +71,12 @@ class SqliteDictionaryStore:
             return []
 
         all_entries = [self._row_to_entry(row) for row in rows]
+        filtered = self._filter_by_pos(all_entries, pos_filter)
 
-        return self._filter_by_pos(all_entries, pos_filter)
+        if len(filtered) > 0:
+            return filtered
+
+        return self._filter_by_empty_pos(all_entries)
 
     def _filter_by_pos(
         self, entries: list[DictionaryEntry], pos_filter: PartOfSpeechId | None
@@ -84,6 +88,13 @@ class SqliteDictionaryStore:
             pos_filter = "verb"
 
         filtered = [e for e in entries if e.part_of_speech == pos_filter]
+
+        return filtered
+
+    def _filter_by_empty_pos(
+        self, entries: list[DictionaryEntry]
+    ) -> list[DictionaryEntry]:
+        filtered = [e for e in entries if e.part_of_speech is None]
 
         return filtered
 
