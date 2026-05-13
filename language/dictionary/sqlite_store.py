@@ -9,6 +9,7 @@ CREATE_TABLE = """
 CREATE TABLE IF NOT EXISTS entries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     headword TEXT NOT NULL,
+    distinction TEXT,
     part_of_speech TEXT,
     translations TEXT NOT NULL,
     definition TEXT,
@@ -23,12 +24,13 @@ ON entries(headword, part_of_speech)
 
 INSERT_ENTRY = """
 INSERT INTO entries
-(headword, part_of_speech, translations, definition, compound_parts)
-VALUES (?, ?, ?, ?, ?)
+(headword, part_of_speech, translations,
+definition, compound_parts, distinction)
+VALUES (?, ?, ?, ?, ?, ?)
 """
 
 SELECT_BY_HEADWORD = """
-SELECT headword, part_of_speech, translations, definition
+SELECT headword, part_of_speech, translations, definition, distinction
 FROM entries WHERE headword = ?
 """
 
@@ -58,6 +60,7 @@ class SqliteDictionaryStore:
                     json.dumps(entry.translations),
                     entry.definition,
                     json.dumps(entry.compound_parts),
+                    entry.distinction,
                 ),
             )
 
@@ -105,4 +108,5 @@ class SqliteDictionaryStore:
             translations=json.loads(row["translations"]),
             definition=row["definition"],
             compound_parts=None,
+            distinction=row["distinction"],
         )

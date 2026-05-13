@@ -10,12 +10,22 @@ DB_PATH = Path("folkets_sv_en.db")
 def main() -> None:
     store = SqliteDictionaryStore(DB_PATH)
 
-    count = 0
+    total = 0
+    compounds = 0
+    distinctions = 0
+
     for entry in parse(XDXF_PATH):
         store.add_entry(entry)
-        count += 1
+        total += 1
+        if entry.distinction:
+            distinctions += 1
+        if entry.compound_parts:
+            compounds += 1
 
-    print(f"Built dictionary with {count} entries")
+    print("Built dictionary successfully")
+    print(f"\t Total Entries: {total}")
+    print(f"\t Compounds: {compounds}")
+    print(f"\t Distinctions: {distinctions}")
 
 
 if __name__ == "__main__":

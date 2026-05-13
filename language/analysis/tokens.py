@@ -13,7 +13,8 @@ from language.analysis.types import PartOfSpeechId
 
 class Definition(BaseModel):
     translations: list[str]
-    definition: str | None = None
+    definition: str | None
+    distinction: str | None
 
 
 class BaseToken(BaseModel):

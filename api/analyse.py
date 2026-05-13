@@ -47,12 +47,12 @@ def analyse_sentence(req: AnalyseRequest) -> AnalyseResponse:
     for token in tokens:
         pos_filter = token.part_of_speech
         entries = dictionary_store.search(token.lemma, pos_filter)
-        if len(entries) == 0:
-            entries = dictionary_store.search(token.text, pos_filter)
 
         token.definitions = [
             Definition(
-                translations=entry.translations, definition=entry.definition
+                translations=entry.translations,
+                definition=entry.definition,
+                distinction=entry.distinction,
             )
             for entry in entries
         ]

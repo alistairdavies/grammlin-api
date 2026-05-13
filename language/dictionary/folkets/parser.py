@@ -61,6 +61,7 @@ def _parse_articles(
             part_of_speech=parse_part_of_speech(definition),
             translations=parse_translations(definition),
             definition=parse_definition(definition),
+            distinction=parse_distinction(definition),
             compound_parts=compound_parts,
         )
 
@@ -121,3 +122,7 @@ def parse_definition(
 
     def_text_elem = def_text_elems.pop()
     return def_text_elem.text.strip() if def_text_elem.text else None
+
+
+def parse_distinction(definition: ElementTree.Element) -> str | None:
+    return definition.attrib.get("cmt", None)

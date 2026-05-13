@@ -12,6 +12,7 @@ from language.dictionary.folkets.exceptions import (
 from language.dictionary.folkets.parser import (
     parse,
     parse_definition,
+    parse_distinction,
     parse_key_phrase,
     parse_part_of_speech,
     parse_translations,
@@ -80,7 +81,7 @@ class TestParse:
         </ar>
         <ar>
             <k>Katt</k>
-            <def>
+            <def cmt="a pet">
                 <gr>nn</gr>
                 <dtrn>cat</dtrn>
                 <def>a domesticated animal</def>
@@ -98,6 +99,7 @@ class TestParse:
                 translations=["Walk"],
                 definition="Going on a walk",
                 compound_parts=None,
+                distinction=None,
             ),
             DictionaryEntry(
                 headword="katt",
@@ -105,6 +107,7 @@ class TestParse:
                 translations=["cat"],
                 definition="a domesticated animal",
                 compound_parts=None,
+                distinction="a pet",
             ),
         ]
 
@@ -132,6 +135,7 @@ class TestParse:
                 translations=[],
                 definition=None,
                 compound_parts=["skott", "kärra"],
+                distinction=None,
             ),
         ]
 
@@ -317,3 +321,27 @@ class TestParseDefinition:
         result = parse_definition(def_element)
 
         assert result == "some nice definition"
+
+
+class TestParseDistinction:
+    def test_no_distinction_comment(self):
+        """
+        Given a definition element with no cmt element
+        It returns None
+        """
+        def_element = ElementTree.XML("<def></def>")
+
+        result = parse_distinction(def_element)
+
+        assert result is None
+
+    def test_valid_distinction_comment(self):
+        """
+        Given a definition element with a cmt attribute
+        It returns the value
+        """
+        def_element = ElementTree.XML('<def cmt="I am a distinction"></def>')
+
+        result = parse_distinction(def_element)
+
+        assert result == "I am a distinction"
