@@ -10,6 +10,7 @@ from language.analysis.tokens import (
 
 class StanzaNLPAnalyser:
     def __init__(self) -> None:
+        stanza.download("sv")
         self._model = stanza.Pipeline(
             "sv",
             download_method=stanza.DownloadMethod.NONE,
