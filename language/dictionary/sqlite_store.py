@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import threading
 from pathlib import Path
 
 from language.analysis.types import PartOfSpeechId
@@ -38,37 +39,42 @@ FROM entries WHERE headword = ?
 class SqliteDictionaryStore:
     def __init__(self, db_path: str | Path):
         self._db_path = str(db_path)
+        self._local = threading.local()
         self._ensure_schema()
 
-    def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self._db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+    def _connection(self) -> sqlite3.Connection:
+        if not hasattr(self._local, "conn"):
+            conn = sqlite3.connect(self._db_path)
+            conn.row_factory = sqlite3.Row
+            self._local.conn = conn
+        return self._local.conn
 
     def _ensure_schema(self) -> None:
-        with self._connect() as conn:
-            conn.execute(CREATE_TABLE)
-            conn.execute(CREATE_INDEX)
+        conn = self._connection()
+        conn.execute(CREATE_TABLE)
+        conn.execute(CREATE_INDEX)
+        conn.commit()
 
     def add_entry(self, entry: DictionaryEntry) -> None:
-        with self._connect() as conn:
-            conn.execute(
-                INSERT_ENTRY,
-                (
-                    entry.headword,
-                    entry.part_of_speech,
-                    json.dumps(entry.translations),
-                    entry.definition,
-                    json.dumps(entry.compound_parts),
-                    entry.distinction,
-                ),
-            )
+        conn = self._connection()
+        conn.execute(
+            INSERT_ENTRY,
+            (
+                entry.headword,
+                entry.part_of_speech,
+                json.dumps(entry.translations),
+                entry.definition,
+                json.dumps(entry.compound_parts),
+                entry.distinction,
+            ),
+        )
+        conn.commit()
 
     def search(
         self, word: str, pos_filter: PartOfSpeechId | None = None
     ) -> list[DictionaryEntry]:
-        with self._connect() as conn:
-            rows = conn.execute(SELECT_BY_HEADWORD, (word.lower(),)).fetchall()
+        conn = self._connection()
+        rows = conn.execute(SELECT_BY_HEADWORD, (word.lower(),)).fetchall()
 
         if not rows:
             return []

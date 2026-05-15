@@ -5,7 +5,7 @@ from language.analysis.tokens import Token
 
 class SpacyNLPAnalyser:
     def __init__(self) -> None:
-        self._model = spacy.load("sv_core_news_md", exclude=["parser"])
+        self._model = spacy.load("sv_core_news_md", exclude=["parser", "ner"])
 
     def analyse(self, text: str) -> list[Token]:
         doc = self._model(text)
