@@ -10,6 +10,14 @@ This application uses the following third-party data sources:
 
 Swedish-English dictionary maintained by the Royal Institute of Technology (KTH), Stockholm.
 
+## Stanza Swedish Language Model
+
+**Source**: https://stanfordnlp.github.io/stanza/
+**License**: Apache License 2.0 (library); CC-BY-SA-4.0 (Swedish model data)
+**License URL**: https://www.apache.org/licenses/LICENSE-2.0
+
+Swedish NLP pipeline developed by the Stanford NLP Group. The Swedish model is trained on the Universal Dependencies Swedish Talbanken treebank (CC-BY-SA-4.0).
+
 ## spaCy Swedish Language Model (sv_core_news_md)
 
 **Source**: https://spacy.io/models/sv

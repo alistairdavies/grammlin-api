@@ -1,51 +1,34 @@
 # Grammlin API
 
-A basic API to provide grammar information and dictionary definitions for the Swedish language. It uses a NLP model such as [spacy](https://spacy.io/models/sv) or [Stanza](https://stanfordnlp.github.io/stanza/models.html)] in combination with [the peoples dictionary (folkets lexicon)](https://folkets-lexikon.csc.kth.se/folkets/om.html).
+A Swedish grammar analysis API providing part-of-speech tagging, morphological analysis, and dictionary definitions from [Folkets Lexikon](https://folkets-lexikon.csc.kth.se/folkets/om.html). Uses [Stanza](https://stanfordnlp.github.io/stanza/) (default) or [spaCy](https://spacy.io/models/sv) for NLP.
 
 ## Local Development
-1. Create a Python virtual environment:
+
+1. Install dependencies:
 ```sh
-uv venv
+uv sync
 ```
 
-2. Activate the virtual environment:
-Bash:
-```sh
-source venv/bin/activate
-```
-
-Fish:
-```sh
-source venv/bin/activate.fish
-```
-
-3. Install Dependencies
-```sh
-uv install
-```
-
-4. Install NLP Model
-```sh
-uv run python -m spacy download sv_core_news_md
-```
-
-5. Run the app
+2. Run the app:
 ```sh
 ./scripts/run-app.sh
 ```
 
-The API should now be available at http://localhost:8001
+The API is available at http://localhost:8001. The Stanza Swedish model downloads automatically on first startup.
 
+### Using spaCy instead
 
+Switch the analyser in `api/main.py` from `StanzaNLPAnalyser` to `SpacyNLPAnalyser`.
 
 ## Linting and Formatting
 
-Lint all files and auto-fix issues if possible:
-```
-uv run ruff check --fix
+```sh
+uv run ruff check --fix   # lint with auto-fix
+uv run ruff format        # format
 ```
 
-Format all files:
-```
-uv run ruff format
+## Testing
+
+```sh
+uv run pytest
 ```

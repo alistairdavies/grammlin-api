@@ -10,14 +10,13 @@ This is a Swedish grammar analysis API built with FastAPI. It provides linguisti
 
 ### Setup
 ```bash
-# Create and activate virtual environment
-uv venv
-source venv/bin/activate  # or: source venv/bin/activate.fish
-
 # Install dependencies
-uv install
+uv sync
 
-# Install required NLP model (must be done after installation)
+# The app uses Stanza by default. The Stanza Swedish model is downloaded
+# automatically at startup on first run.
+
+# To use SpacyNLPAnalyser instead, install the Swedish model manually:
 uv run python -m spacy download sv_core_news_md
 ```
 
@@ -44,6 +43,21 @@ uv run pytest tests/language/analysis/test_morphology.py::TestNounMorphology_bui
 - `language/analysis/morphology.py` → `tests/language/analysis/test_morphology.py`
 - `language/dictionary/service.py` → `tests/language/dictionary/test_service.py`
 
+### Smoke Tests
+Post-deploy quality evaluation against the live API:
+```bash
+# Against deployed service (default)
+python3 scripts/smoke_test.py
+
+# Against local server
+python3 scripts/smoke_test.py --url http://localhost:8001
+
+# With custom thresholds
+python3 scripts/smoke_test.py --lemma-threshold 0.80 --pos-threshold 0.90
+```
+
+Reports lemma accuracy, POS accuracy, and definition coverage across 20 targeted sentences. Exits with code 1 if any metric falls below its threshold.
+
 ### Linting and Formatting
 ```bash
 # Lint with auto-fix
@@ -62,26 +76,37 @@ uv run ruff format
 The codebase follows a domain-driven structure with clear separation of concerns:
 
 - **`api/`** - FastAPI application layer
-  - `main.py` - API app initialization and router registration
+  - `main.py` - API app initialization, router registration, and NLP analyser selection
   - `health.py` - `/health` endpoint for health checks
   - `analyse.py` - `/analyse` endpoint with request/response types
-  - `define.py` - `/define` endpoint with request/response types
 
 - **`language/analysis/`** - Core linguistic analysis
-  - `parser.py` - Main parsing logic, orchestrates token analysis
+  - `analyser.py` - `NLPAnalyser` protocol defining the analyser interface
   - `part_of_speech.py` - Maps Universal POS tags to application-specific PartOfSpeech types
-  - `morphology.py` - Morphological analysis for nouns, verbs, and pronouns (gender, tense, case, etc.)
+  - `morphology.py` - Morphological analysis for nouns, verbs, adjectives, and pronouns
   - `types.py` - Literal types for all domain types (POS IDs, morphological features)
-  - `tokens.py` - Token models (BaseToken, NounToken, VerbToken, PronounToken)
-  - `models.py` - Loads the spaCy Swedish model (sv_core_news_lg)
+  - `tokens.py` - Token models (BaseToken, NounToken, VerbToken, PronounToken, AdjectiveToken)
+  - `stanza/` - Stanza-based NLP implementation (default, better accuracy)
+  - `spacy/` - spaCy-based NLP implementation (alternative, requires manual model install)
 
 - **`language/dictionary/`** - Dictionary integration
-  - `service.py` - DictionaryService loads and searches the XDXF dictionary file
+  - `sqlite_store.py` - Searches the SQLite dictionary database by headword and POS
+  - `build.py` - Builds the SQLite database from the XDXF source file
+  - `models.py` - DictionaryEntry model
 
 - **`language/detection.py`** - Language detection
   - `is_swedish()` - Validates that text is Swedish using lingua-py
 
 - **`tests/`** - Unit tests mirror the language module structure
+
+### NLP Backend
+
+The application supports two NLP backends via the `NLPAnalyser` protocol:
+
+- **Stanza** (`StanzaNLPAnalyser`) — currently deployed. Better lemmatization and POS accuracy, higher memory usage (~870MB in Docker).
+- **spaCy** (`SpacyNLPAnalyser`) — alternative backend. Lower memory usage but weaker lemmatization, particularly on irregular verb forms. Requires `sv_core_news_md` to be installed manually (not a project dependency).
+
+Switch backends by changing the analyser instantiated in `api/main.py`.
 
 ### Data Flow
 
@@ -89,10 +114,10 @@ The codebase follows a domain-driven structure with clear separation of concerns
 2. **Validation** → Input is validated:
    - Pydantic validates length (1-1000 chars) and strips whitespace
    - Language detection confirms text is Swedish (returns 422 if not)
-3. **NLP Processing** → spaCy processes text with Swedish model
+3. **NLP Processing** → Stanza (or spaCy) processes text with Swedish model
 4. **Token Parsing** → Each token is analyzed:
    - Part-of-speech mapping from Universal POS tags
-   - Morphological analysis based on POS type (noun/verb/pronoun)
+   - Morphological analysis based on POS type (noun/verb/adjective/pronoun)
    - Dictionary lookup using lemmatized form with POS filtering
    - Punctuation tokens are filtered out
 5. **Response** → Returns typed tokens with morphology and definitions
@@ -102,25 +127,24 @@ The codebase follows a domain-driven structure with clear separation of concerns
 The parser returns different token types based on part-of-speech:
 - **NounToken** - includes NounMorphology (gender, definiteness, plurality)
 - **VerbToken** - includes VerbMorphology (tense, form)
+- **AdjectiveToken** - includes AdjectiveMorphology (degree)
 - **PronounToken** - includes PronounMorphology (case/form)
 - **BaseToken** - fallback for other parts of speech
 
-All token types inherit from BaseToken which provides: text, part_of_speech, and definitions fields.
+All token types inherit from BaseToken which provides: text, lemma, part_of_speech, and definitions fields.
 
 ### Dictionary Integration
 
-The application requires `folkets_sv_en.xdxf` dictionary file in the root directory. This is loaded at startup by DictionaryService and searched using lemmatized word forms. The dictionary is parsed from XDXF format and stored in memory as a dict mapping headwords to lists of DictionaryEntry objects.
+The application uses a SQLite database (`folkets_sv_en.db`) built from the Folkets Lexikon XDXF file. The database is built at image build time by `scripts/build.sh` and is not committed to the repository.
 
-**POS-Aware Filtering**: Dictionary searches support optional POS filtering (language/dictionary/service.py). When a POS filter is provided:
-1. Returns only definitions matching the detected part of speech (e.g., verb definitions for verbs)
-2. Falls back to all definitions if no POS match is found
-3. Dictionary POS abbreviations (nn, vb, jj, etc.) are mapped to application POS IDs via `DICTIONARY_POS_MAP`
-
-This ensures users see contextually relevant definitions while maintaining robustness when POS tags are missing or ambiguous.
+**POS-Aware Filtering**: Dictionary searches filter by POS to return contextually relevant definitions. When a POS filter is provided:
+1. Returns only definitions matching the detected part of speech
+2. Falls back to null-POS entries if no POS match is found
+3. Dictionary POS abbreviations (nn, vb, jj, etc.) are mapped to application POS IDs via `DICTIONARY_POS_MAP` in `sqlite_store.py`
 
 ### Morphological Analysis
 
-Morphology extraction uses `.build()` class methods (language/analysis/morphology.py) that map spaCy's morphological features to application-specific literal types. Unknown or missing values default to None rather than failing.
+Morphology extraction uses `.build()` class methods (language/analysis/morphology.py) that map morphological feature strings to application-specific literal types. Unknown or missing values default to None rather than failing.
 
 ## Code Conventions
 
@@ -137,14 +161,14 @@ Morphology extraction uses `.build()` class methods (language/analysis/morpholog
 - Separation prevents circular imports between types, morphology, and part_of_speech modules
 
 ### Part of Speech Mappings
-- **Universal POS → Application**: `UNIVERSAL_POS_MAP` in `part_of_speech.py` maps spaCy tags
-- **Dictionary POS → Application**: `DICTIONARY_POS_MAP` in `dictionary/service.py` maps Folkets Lexikon abbreviations
+- **Universal POS → Application**: `UNIVERSAL_POS_MAP` in `part_of_speech.py` maps spaCy/Stanza tags
+- **Dictionary POS → Application**: `DICTIONARY_POS_MAP` in `sqlite_store.py` maps Folkets Lexikon abbreviations
 - Both mappings reference the canonical `PartOfSpeechId` type from `types.py`
 
 ### API Structure
 - **Co-locate types with handlers**: Each endpoint file contains its request/response types and handler function
 - **Use APIRouter**: Each endpoint file exports a `router` that gets registered in `main.py`
-- **Shared dependencies in main.py**: Global instances (nlp, dictionary_service) are initialized in main.py
+- **Shared dependencies in main.py**: Global instances (analyser, dictionary_store) are initialized in main.py
 
 ### Module Placement Guidelines
 - **Domain logic belongs in `language/` modules, not `api/`**: Language detection, validation logic, and linguistic operations should live in the language package
@@ -153,13 +177,6 @@ Morphology extraction uses `.build()` class methods (language/analysis/morpholog
 - **Handle errors at domain boundaries**: Domain modules should return simple values (bool, None) rather than raise exceptions when possible. Let the API layer decide HTTP responses
 - **No circular dependencies**: Domain layer (language/) should never import from API layer (api/)
 
-### Adding New Features
-When adding features that involve multiple definition sources or POS-dependent behavior:
-1. Consider whether filtering/fallback logic is needed
-2. Test edge cases: missing data, ambiguous tags, multiple matches
-3. Maintain backward compatibility where possible (e.g., optional parameters with sensible defaults)
-4. Place domain logic in appropriate `language/` modules, not in the API layer
-
 ### Input Validation Pattern
 When adding API validation:
 1. **Pydantic validators** handle basic constraints (length, format, whitespace trimming)
@@ -167,13 +184,12 @@ When adding API validation:
 3. **API returns 422** for validation failures with descriptive error messages
 4. **Domain functions return simple types** (bool, None, str) - avoid raising exceptions for expected failure cases
 
-Example: The `is_swedish()` function returns `False` instead of raising an exception, allowing the API layer to decide the appropriate HTTP response.
-
 ## Dependencies
 
 ### Production Dependencies
 - **FastAPI/Uvicorn** - Web framework and ASGI server
-- **spaCy** - NLP pipeline with `sv_core_news_md` model for Swedish
+- **Stanza** - Primary NLP pipeline (Stanford NLP), Swedish model downloaded at startup
+- **spaCy** - Alternative NLP pipeline; `sv_core_news_md` model not installed by default
 - **lingua-py** - Language detection for Swedish validation (optimized for short texts)
 - **Pydantic** - Data validation and serialization
 
@@ -183,35 +199,43 @@ Example: The `is_swedish()` function returns `False` instead of raising an excep
 
 ## Deployment
 
-The application is configured for deployment to Render using the free tier.
+The application is deployed to Fly.io using Docker.
 
 ### Deployment Files
 
-- **`render.yaml`** - Render service configuration
-  - Configures Python 3.13.11 runtime
-  - Defines build and start commands
-  - Health check endpoint: `/health`
-  - Free tier plan
+- **`fly.toml`** - Fly.io service configuration
+  - Region: `arn` (Stockholm)
+  - Machine: 1GB RAM (shared CPU)
+  - Auto-stop when idle, auto-start on request
 
-- **`scripts/build.sh`** - Build script executed by Render
-  - Installs dependencies via `uv sync --no-dev` (production only, excludes pytest and ruff)
-  - Downloads spaCy Swedish model (`sv_core_news_md`)
-  - Downloads Folkets Lexikon dictionary file from https://folkets-lexikon.csc.kth.se/folkets/folkets_sv_en_public.xdxf
+- **`Dockerfile`** - Multi-stage build
+  - Builder stage: installs dependencies, downloads XDXF, builds SQLite database, downloads Stanza model
+  - App stage: copies only runtime artifacts (venv, app code, database, Stanza models)
 
-- **`THIRD_PARTY_NOTICES.md`** - License attributions
-  - Documents third-party data sources and their licenses
-  - Folkets Lexikon (CC-BY-SA-2.5)
-  - spaCy Swedish model (CC-BY-SA-4.0)
+- **`scripts/build.sh`** - Build script run during Docker image build
+  - Installs dependencies via `uv sync --no-dev`
+  - Downloads Folkets Lexikon XDXF and builds SQLite database
+  - Downloads Stanza Swedish model
+
+- **`THIRD_PARTY_NOTICES.md`** - License attributions for Folkets Lexikon, Stanza, and spaCy models
+
+### CI/CD
+
+- **`.github/workflows/ci.yml`** - Runs lint, type-check, and tests on push and PRs to main
+- **`.github/workflows/deploy.yml`** - Deploys to Fly.io when CI passes on main
+- **`.github/workflows/smoke-test.yml`** - Manual workflow to run post-deploy quality checks
 
 ### Deployment Process
 
-1. Push code to GitHub
-2. Connect repository to Render
-3. Render automatically runs `scripts/build.sh`
-4. Application starts with uvicorn on Render's assigned port
-5. Health check at `/health` confirms service is running
+Push to main triggers CI. On success, the deploy workflow builds and pushes the Docker image to Fly.io automatically. The `FLY_API_TOKEN` secret must be set in the GitHub repository settings.
 
-**Note**: Render's free tier spins down after 15 minutes of inactivity. First request after inactivity will be slower as the service spins back up.
+### Running Smoke Tests After Deploy
+
+```bash
+python3 scripts/smoke_test.py
+```
+
+The service auto-stops when idle. First request after inactivity will be slower as Fly.io starts the machine.
 
 ## Git Conventions
 
