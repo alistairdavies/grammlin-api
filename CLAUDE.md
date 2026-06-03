@@ -10,8 +10,17 @@ This is a Swedish grammar analysis API built with FastAPI. It provides linguisti
 
 ### Setup
 ```bash
+# Create and activate virtual environment
+uv venv
+source venv/bin/activate  # or: source venv/bin/activate.fish
+
 # Install dependencies
 uv sync
+
+# Build the dictionary database from the Folkets Lexikon source file.
+# Requires folkets_sv_en.xdxf at the project root (see scripts/build.sh
+# for the download URL); produces folkets_sv_en.db.
+uv run python -m language.dictionary.build
 
 # The app uses Stanza by default. The Stanza Swedish model is downloaded
 # automatically at startup on first run.
@@ -41,7 +50,7 @@ uv run pytest tests/language/analysis/test_morphology.py::TestNounMorphology_bui
 
 **Test Structure Convention**: Tests must mirror the source directory structure. For example:
 - `language/analysis/morphology.py` → `tests/language/analysis/test_morphology.py`
-- `language/dictionary/service.py` → `tests/language/dictionary/test_service.py`
+- `language/dictionary/sqlite_store.py` → `tests/language/dictionary/test_sqlite_store.py`
 
 ### Smoke Tests
 Post-deploy quality evaluation against the live API:
@@ -76,23 +85,25 @@ uv run ruff format
 The codebase follows a domain-driven structure with clear separation of concerns:
 
 - **`api/`** - FastAPI application layer
-  - `main.py` - API app initialization, router registration, and NLP analyser selection
+  - `main.py` - API app initialization, CORS middleware, router registration, and global instances (analyser, dictionary_store)
   - `health.py` - `/health` endpoint for health checks
   - `analyse.py` - `/analyse` endpoint with request/response types
 
 - **`language/analysis/`** - Core linguistic analysis
-  - `analyser.py` - `NLPAnalyser` protocol defining the analyser interface
+  - `analyser.py` - `NLPAnalyser` Protocol defining the `analyse(text) -> list[Token]` interface
+  - `stanza/` - Stanza-backed analyser (`StanzaNLPAnalyser`) and its `parse_tokens` logic (default)
+  - `spacy/` - spaCy-backed analyser (`SpacyNLPAnalyser`) and its `parse_tokens` logic (alternative)
   - `part_of_speech.py` - Maps Universal POS tags to application-specific PartOfSpeech types
-  - `morphology.py` - Morphological analysis for nouns, verbs, adjectives, and pronouns
+  - `morphology.py` - Morphological analysis for nouns, verbs, adjectives, and pronouns (gender, tense, degree, case, etc.)
   - `types.py` - Literal types for all domain types (POS IDs, morphological features)
-  - `tokens.py` - Token models (BaseToken, NounToken, VerbToken, PronounToken, AdjectiveToken)
-  - `stanza/` - Stanza-based NLP implementation (default, better accuracy)
-  - `spacy/` - spaCy-based NLP implementation (alternative, requires manual model install)
+  - `tokens.py` - Token models (BaseToken, NounToken, VerbToken, AdjectiveToken, PronounToken) and the `Token` union
 
 - **`language/dictionary/`** - Dictionary integration
-  - `sqlite_store.py` - Searches the SQLite dictionary database by headword and POS
-  - `build.py` - Builds the SQLite database from the XDXF source file
-  - `models.py` - DictionaryEntry model
+  - `store.py` - `DictionaryStore` Protocol (`add_entry`, `search`)
+  - `sqlite_store.py` - `SqliteDictionaryStore`, a SQLite-backed implementation searched at request time
+  - `models.py` - `DictionaryEntry` model
+  - `build.py` - Offline build step that parses the XDXF file and populates the SQLite database
+  - `folkets/` - XDXF parser for the Folkets Lexikon source file (`parser.py`, `exceptions.py`)
 
 - **`language/detection.py`** - Language detection
   - `is_swedish()` - Validates that text is Swedish using lingua-py
@@ -118,15 +129,15 @@ Switch backends by changing the analyser instantiated in `api/main.py`.
 4. **Token Parsing** → Each token is analyzed:
    - Part-of-speech mapping from Universal POS tags
    - Morphological analysis based on POS type (noun/verb/adjective/pronoun)
-   - Dictionary lookup using lemmatized form with POS filtering
-   - Punctuation tokens are filtered out
-5. **Response** → Returns typed tokens with morphology and definitions
+   - Punctuation/symbol/space tokens are filtered out
+5. **Dictionary Lookup** → `/analyse` searches `dictionary_store` by lemma with POS filtering and attaches definitions to each token
+6. **Response** → Returns typed tokens with morphology and definitions
 
 ### Token Type System
 
 The parser returns different token types based on part-of-speech:
 - **NounToken** - includes NounMorphology (gender, definiteness, plurality)
-- **VerbToken** - includes VerbMorphology (tense, form)
+- **VerbToken** - includes VerbMorphology (tense, form); also used for auxiliary verbs
 - **AdjectiveToken** - includes AdjectiveMorphology (degree)
 - **PronounToken** - includes PronounMorphology (case/form)
 - **BaseToken** - fallback for other parts of speech
@@ -135,16 +146,19 @@ All token types inherit from BaseToken which provides: text, lemma, part_of_spee
 
 ### Dictionary Integration
 
-The application uses a SQLite database (`folkets_sv_en.db`) built from the Folkets Lexikon XDXF file. The database is built at image build time by `scripts/build.sh` and is not committed to the repository.
+Dictionary data is served from a SQLite database (`folkets_sv_en.db`) at the project root, opened by `SqliteDictionaryStore` and searched by lemma at request time. The database is a build artifact, not source: `language/dictionary/build.py` parses the `folkets_sv_en.xdxf` source file (via `language/dictionary/folkets/parser.py`) and inserts a `DictionaryEntry` per article. Headwords are stored lowercased; compound key phrases (split on `|`) are recorded as `compound_parts`.
 
-**POS-Aware Filtering**: Dictionary searches filter by POS to return contextually relevant definitions. When a POS filter is provided:
-1. Returns only definitions matching the detected part of speech
-2. Falls back to null-POS entries if no POS match is found
-3. Dictionary POS abbreviations (nn, vb, jj, etc.) are mapped to application POS IDs via `DICTIONARY_POS_MAP` in `sqlite_store.py`
+**POS-Aware Filtering**: `SqliteDictionaryStore.search()` accepts an optional POS filter. When one is provided:
+1. Returns only entries matching the detected part of speech (e.g., verb definitions for verbs)
+2. `auxiliary_verb` is treated as `verb` for matching purposes
+3. Falls back to entries with no POS (`part_of_speech is None`) when no POS match is found
+4. Dictionary POS abbreviations (nn, vb, jj, etc.) are mapped to application POS IDs via `FOLKETS_POS_MAP` in `folkets/parser.py` during the build
+
+This ensures users see contextually relevant definitions while maintaining robustness when POS tags are missing or ambiguous.
 
 ### Morphological Analysis
 
-Morphology extraction uses `.build()` class methods (language/analysis/morphology.py) that map morphological feature strings to application-specific literal types. Unknown or missing values default to None rather than failing.
+Morphology extraction uses `.build()` class methods (language/analysis/morphology.py) that map a UD morphological feature string (as produced by spaCy or Stanza) to application-specific literal types. Unknown or missing values default to None rather than failing.
 
 ## Code Conventions
 
@@ -162,13 +176,13 @@ Morphology extraction uses `.build()` class methods (language/analysis/morpholog
 
 ### Part of Speech Mappings
 - **Universal POS → Application**: `UNIVERSAL_POS_MAP` in `part_of_speech.py` maps spaCy/Stanza tags
-- **Dictionary POS → Application**: `DICTIONARY_POS_MAP` in `sqlite_store.py` maps Folkets Lexikon abbreviations
+- **Dictionary POS → Application**: `FOLKETS_POS_MAP` in `dictionary/folkets/parser.py` maps Folkets Lexikon abbreviations
 - Both mappings reference the canonical `PartOfSpeechId` type from `types.py`
 
 ### API Structure
 - **Co-locate types with handlers**: Each endpoint file contains its request/response types and handler function
 - **Use APIRouter**: Each endpoint file exports a `router` that gets registered in `main.py`
-- **Shared dependencies in main.py**: Global instances (analyser, dictionary_store) are initialized in main.py
+- **Shared dependencies in main.py**: Global instances (`analyser`, `dictionary_store`) are initialized in main.py and imported by handlers
 
 ### Module Placement Guidelines
 - **Domain logic belongs in `language/` modules, not `api/`**: Language detection, validation logic, and linguistic operations should live in the language package
@@ -195,7 +209,9 @@ When adding API validation:
 
 ### Development Dependencies
 - **pytest** - Testing framework
+- **factory-boy** - Test data factories
 - **ruff** - Linting and formatting
+- **ty** - Type checking
 
 ## Deployment
 

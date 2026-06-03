@@ -9,7 +9,31 @@ A Swedish grammar analysis API providing part-of-speech tagging, morphological a
 uv sync
 ```
 
-2. Run the app:
+2. Activate the virtual environment:
+Bash:
+```sh
+source venv/bin/activate
+```
+
+Fish:
+```sh
+source venv/bin/activate.fish
+```
+
+3. Install Dependencies
+```sh
+uv sync
+```
+
+4. Build the dictionary database
+
+Download `folkets_sv_en.xdxf` from https://folkets-lexikon.csc.kth.se/folkets/folkets_sv_en_public.xdxf and place it in the project root, then run:
+```sh
+uv run python -m language.dictionary.build
+```
+
+5. Run the app
+>>>>>>> 8b70f55 (Update CLAUDE.md and README for setup instructions)
 ```sh
 ./scripts/run-app.sh
 ```
