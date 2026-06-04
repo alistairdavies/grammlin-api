@@ -31,7 +31,8 @@ VALUES (?, ?, ?, ?, ?, ?)
 """
 
 SELECT_BY_HEADWORD = """
-SELECT headword, part_of_speech, translations, definition, distinction
+SELECT headword, part_of_speech, translations, definition, distinction,
+compound_parts
 FROM entries WHERE headword = ?
 """
 
@@ -108,11 +109,12 @@ class SqliteDictionaryStore:
         return filtered
 
     def _row_to_entry(self, row: sqlite3.Row) -> DictionaryEntry:
+        raw_parts = row["compound_parts"]
         return DictionaryEntry(
             headword=row["headword"],
             part_of_speech=row["part_of_speech"],
             translations=json.loads(row["translations"]),
             definition=row["definition"],
-            compound_parts=None,
+            compound_parts=json.loads(raw_parts) if raw_parts else None,
             distinction=row["distinction"],
         )

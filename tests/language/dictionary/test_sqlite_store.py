@@ -109,3 +109,40 @@ class TestSqliteDictionaryStore_search:
 
         assert len(store.search("Bank")) == 1
         assert len(store.search("BANK")) == 1
+
+    def test_returns_compound_parts(self, tmp_path: Path):
+        """
+        Given an entry stored with compound_parts
+        When it is retrieved via search
+        It returns compound_parts unchanged
+        """
+        store = SqliteDictionaryStore(tmp_path / "test.db")
+        entry = DictionaryEntryFactory.create(
+            headword="bokhandel",
+            compound_parts=["bok", "handel"],
+        )
+        store.add_entry(entry)
+
+        result = store.search("bokhandel")
+
+        assert len(result) == 1
+        assert result[0].compound_parts == ["bok", "handel"]
+
+    def test_returns_null_compound_parts_when_not_a_compound(
+        self, tmp_path: Path
+    ):
+        """
+        Given an entry stored without compound_parts
+        When it is retrieved via search
+        It returns compound_parts as None
+        """
+        store = SqliteDictionaryStore(tmp_path / "test.db")
+        entry = DictionaryEntryFactory.create(
+            headword="bok", compound_parts=None
+        )
+        store.add_entry(entry)
+
+        result = store.search("bok")
+
+        assert len(result) == 1
+        assert result[0].compound_parts is None
