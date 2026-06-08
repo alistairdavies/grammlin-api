@@ -13,6 +13,7 @@ from language.dictionary.folkets.parser import (
     parse,
     parse_definition,
     parse_distinction,
+    parse_example_compounds,
     parse_key_phrase,
     parse_part_of_speech,
     parse_translations,
@@ -138,6 +139,206 @@ class TestParse:
                 distinction=None,
             ),
         ]
+
+    def test_parses_compounds_from_word_examples(self, tmp_path: Path):
+        """
+        Given valid XDXF file with example words that are unique compounds
+        It returns a DictionaryEntry for the compound
+        """
+        entries = """
+        <ar>
+            <k>pinne</k>
+            <def>
+                <gr>nn</gr>
+                <ex type="phr">
+                    <ex_orig>abborr|pinne</ex_orig>
+                    <ex_transl>small perch</ex_transl>
+                </ex>
+                <ex type="phr">
+                    <ex_orig>something that isnt a conjunction</ex_orig>
+                </ex>
+            </def>
+        </ar>
+        """
+        xdxf = create_xdxf(tmp_path, entries)
+
+        result = list(parse(xdxf))
+
+        assert (
+            DictionaryEntry(
+                headword="abborrpinne",
+                part_of_speech=None,
+                translations=["small perch"],
+                definition=None,
+                compound_parts=["abborr", "pinne"],
+                distinction=None,
+            )
+            in result
+        )
+
+    def test_filters_duplicate_compounds_from_word_examples(
+        self, tmp_path: Path
+    ):
+        """
+        Given valid XDXF file with duplicate compounds in examples and entries
+        It returns a single DictionaryEntry for the article entry
+        """
+        entries = """
+        <ar>
+            <k>abborr|pinne</k>
+            <def>
+                <gr>nn</gr>
+                <dtrn>small fishy</dtrn>
+                <def>the opposite of a big fish</def>
+                <ex type="phr">
+                    <ex_orig>abborr|pinne</ex_orig>
+                    <ex_transl>small perch</ex_transl>
+                </ex>
+            </def>
+        </ar>
+        """
+        xdxf = create_xdxf(tmp_path, entries)
+
+        result = list(parse(xdxf))
+
+        assert len(result) == 1
+        assert (
+            DictionaryEntry(
+                headword="abborrpinne",
+                part_of_speech="noun",
+                translations=["small fishy"],
+                definition="the opposite of a big fish",
+                compound_parts=["abborr", "pinne"],
+                distinction=None,
+            )
+            in result
+        )
+
+
+class TestParseExampleCompounds:
+    def test_returns_empty_when_no_examples(self):
+        """
+        Given an article with no example elements
+        It returns no entries
+        """
+        article = ElementTree.XML(
+            "<ar><k>pinne</k><def><gr>nn</gr></def></ar>"
+        )
+
+        result = list(parse_example_compounds([article]))
+
+        assert result == []
+
+    def test_skips_examples_without_pipe(self):
+        """
+        Given an example whose ex_orig has no morpheme boundary marker
+        It does not return an entry for it
+        """
+        article = ElementTree.XML(
+            "<ar><k>pinne</k><def>"
+            '<ex type="phr"><ex_orig>abborrpinne</ex_orig></ex>'
+            "</def></ar>"
+        )
+
+        result = list(parse_example_compounds([article]))
+
+        assert result == []
+
+    def test_returns_entry_for_pipe_compound(self):
+        """
+        Given an example whose ex_orig contains a pipe-delimited compound
+        It returns a DictionaryEntry with compound_parts set
+        """
+        article = ElementTree.XML(
+            "<ar><k>pinne</k><def>"
+            '<ex type="phr">'
+            "<ex_orig>abborr|pinne</ex_orig>"
+            "<ex_transl>small perch</ex_transl>"
+            "</ex>"
+            "</def></ar>"
+        )
+
+        result = list(parse_example_compounds([article]))
+
+        assert result == [
+            DictionaryEntry(
+                headword="abborrpinne",
+                part_of_speech=None,
+                translations=["small perch"],
+                definition=None,
+                compound_parts=["abborr", "pinne"],
+                distinction=None,
+            )
+        ]
+
+    def test_returns_empty_translations_when_no_ex_transl(self):
+        """
+        Given a compound example with no ex_transl element
+        It returns an entry with an empty translations list
+        """
+        article = ElementTree.XML(
+            "<ar><k>pinne</k><def>"
+            '<ex type="phr"><ex_orig>abborr|pinne</ex_orig></ex>'
+            "</def></ar>"
+        )
+
+        result = list(parse_example_compounds([article]))
+
+        assert result == [
+            DictionaryEntry(
+                headword="abborrpinne",
+                part_of_speech=None,
+                translations=[],
+                definition=None,
+                compound_parts=["abborr", "pinne"],
+                distinction=None,
+            )
+        ]
+
+    def test_skips_multiword_examples(self):
+        """
+        Given an example whose ex_orig is a multi-word phrase without a pipe
+        It does not return an entry for it
+        """
+        article = ElementTree.XML(
+            "<ar><k>bok</k><def>"
+            '<ex type="phr"><ex_orig>en bra bok</ex_orig></ex>'
+            "</def></ar>"
+        )
+
+        result = list(parse_example_compounds([article]))
+
+        assert result == []
+
+    def test_returns_entries_from_multiple_articles(self):
+        """
+        Given multiple articles each with compound examples
+        It returns an entry for each compound
+        """
+        articles = [
+            ElementTree.XML(
+                "<ar><k>bok</k><def>"
+                '<ex type="phr">'
+                "<ex_orig>bok|handel</ex_orig>"
+                "<ex_transl>bookshop</ex_transl>"
+                "</ex>"
+                "</def></ar>"
+            ),
+            ElementTree.XML(
+                "<ar><k>barn</k><def>"
+                '<ex type="phr">'
+                "<ex_orig>barn|skola</ex_orig>"
+                "<ex_transl>primary school</ex_transl>"
+                "</ex>"
+                "</def></ar>"
+            ),
+        ]
+
+        result = list(parse_example_compounds(articles))
+
+        assert len(result) == 2
+        assert result[0].headword == "bokhandel"
+        assert result[1].headword == "barnskola"
 
 
 class TestParseKeyPhrase:

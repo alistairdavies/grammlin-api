@@ -2,6 +2,7 @@ from typing import Iterable
 import xml.etree.ElementTree as ElementTree
 from collections.abc import Iterator
 from pathlib import Path
+from itertools import chain
 
 from language.analysis.types import PartOfSpeechId
 from language.dictionary.folkets.exceptions import (
@@ -43,7 +44,16 @@ def parse(path: Path) -> Iterator[DictionaryEntry]:
             "No lexicon element found in XDXF file"
         )
 
-    return _parse_articles(lexicon.findall("ar"))
+    articles = lexicon.findall("ar")
+    article_entries = list(_parse_articles(articles))
+    headwords = {entry.headword for entry in article_entries}
+    example_compounds = (
+        example_compound
+        for example_compound in parse_example_compounds(articles)
+        if example_compound.headword not in headwords
+    )
+
+    return chain(article_entries, example_compounds)
 
 
 def _parse_articles(
@@ -126,3 +136,39 @@ def parse_definition(
 
 def parse_distinction(definition: ElementTree.Element) -> str | None:
     return definition.attrib.get("cmt", None)
+
+
+def parse_example_compounds(
+    articles: Iterable[ElementTree.Element],
+) -> Iterator[DictionaryEntry]:
+    for article in articles:
+        definition = article.find("def")
+        if definition is None:
+            continue
+
+        examples = definition.findall("ex")
+        for example in examples:
+            compound_example = example.find("ex_orig")
+            if compound_example is None or not compound_example.text:
+                continue
+
+            if "|" not in str(compound_example.text):
+                continue
+
+            compound_parts = compound_example.text.strip().lower().split("|")
+            headword = "".join(compound_parts)
+
+            translation = example.find("ex_transl")
+
+            yield DictionaryEntry(
+                headword=headword,
+                part_of_speech=None,
+                translations=(
+                    [translation.text]
+                    if translation is not None and translation.text
+                    else []
+                ),
+                definition=None,
+                distinction=None,
+                compound_parts=compound_parts,
+            )
