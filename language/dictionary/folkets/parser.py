@@ -65,6 +65,8 @@ def _parse_articles(
             continue
 
         headword, compound_parts = parse_key_phrase(article)
+        if not headword.isalnum():
+            continue
 
         yield DictionaryEntry(
             headword=headword,

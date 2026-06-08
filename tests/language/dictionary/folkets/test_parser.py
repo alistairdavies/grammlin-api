@@ -88,6 +88,12 @@ class TestParse:
                 <def>a domesticated animal</def>
             </def>
         </ar>
+        <ar>
+            <k>Some garbage to ignore</k>
+            <def>
+                <gr>nn</gr>
+            </def>
+        </ar>
         """
         xdxf = create_xdxf(tmp_path, entries)
 
