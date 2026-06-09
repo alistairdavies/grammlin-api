@@ -15,6 +15,7 @@ class Definition(BaseModel):
     translations: list[str]
     definition: str | None
     distinction: str | None
+    compound_parts: list[str] | None = None
 
 
 class BaseToken(BaseModel):

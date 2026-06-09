@@ -53,6 +53,7 @@ def analyse_sentence(req: AnalyseRequest) -> AnalyseResponse:
                 translations=entry.translations,
                 definition=entry.definition,
                 distinction=entry.distinction,
+                compound_parts=entry.compound_parts,
             )
             for entry in entries
         ]
