@@ -2,6 +2,9 @@
 
 A Swedish grammar analysis API providing part-of-speech tagging, morphological analysis, and dictionary definitions from [Folkets Lexikon](https://folkets-lexikon.csc.kth.se/folkets/om.html). Uses [Stanza](https://stanfordnlp.github.io/stanza/) (default) or [spaCy](https://spacy.io/models/sv) for NLP.
 
+- [Chrome Extension](https://chromewebstore.google.com/detail/grammlin/emipiahcdgnnlopmohkaedhbobgcaleo)
+- [Firefox Addon](https://addons.mozilla.org/en-US/firefox/addon/grammlin/)
+
 ## Local Development
 
 1. Install dependencies:
