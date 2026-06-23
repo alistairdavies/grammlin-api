@@ -33,7 +33,6 @@ uv run python -m language.dictionary.build
 ```
 
 5. Run the app
->>>>>>> 8b70f55 (Update CLAUDE.md and README for setup instructions)
 ```sh
 ./scripts/run-app.sh
 ```
